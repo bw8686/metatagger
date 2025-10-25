@@ -1,7 +1,7 @@
 name: metatagger
 description: A pure Dart library for writing metadata to MP3 and FLAC files with custom tag support.
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/bw8686/metatagger
 
 environment:
   sdk: ^3.9.2
