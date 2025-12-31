@@ -1,3 +1,23 @@
+## 2.0.0
+
+- **BREAKING**: Added read functionality - major feature addition
+- Added `MetadataReader` abstract class for reading metadata
+- Implemented `Mp3Reader` for reading ID3v2.3 and ID3v2.4 tags from MP3 files
+- Implemented `FlacReader` for reading Vorbis Comments and PICTURE blocks from FLAC files
+- Implemented `Mp4Writer` for writing iTunes-style metadata to MP4/M4A files
+- Implemented `Mp4Reader` for reading iTunes-style metadata from MP4/M4A files
+- Added support for `.mp4`, `.m4a`, `.m4v`, and `.m4b` file extensions
+- Added `readTags()` method to read all metadata from a file
+- Added `readTag()` method to read a specific tag from a file
+- Added `readCommonTags()` method to read metadata as a convenient Map
+- Enhanced `MetaTagger` constructor to support both readers and writers
+- Added comprehensive tests for read and write functionality (19 tests covering MP3, FLAC, and MP4)
+- Added `read_example.dart` demonstrating metadata reading
+- Added `read_write_example.dart` demonstrating advanced operations (copy, update, migrate)
+- Updated README with extensive read functionality documentation
+- Technical note: MP4 atom names use Latin-1 encoding for proper handling of © character (0xA9)
+- All existing write functionality remains unchanged and compatible
+
 ## 1.0.0
 
 - Initial version.

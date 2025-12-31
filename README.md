@@ -1,22 +1,25 @@
 # MetaTagger
 
-A pure Dart library for writing metadata to MP3 and FLAC files with custom tag support.
+A pure Dart library for reading and writing metadata to MP3, MP4/M4A, and FLAC files with custom tag support.
 
 ## Features
 
-- **MP3 Support**: Write ID3v2.4 tags to MP3 files
-- **FLAC Support**: Write Vorbis Comments to FLAC files  
+- **Read & Write Support**: Both read and write metadata tags
+- **MP3 Support**: Read and write ID3v2 tags to MP3 files
+- **MP4/M4A Support**: Read and write iTunes-style metadata to MP4/M4A files
+- **FLAC Support**: Read and write Vorbis Comments to FLAC files  
 - **Custom Tags**: Support for custom metadata fields
-- **Album Art**: Support for embedding album artwork
+- **Album Art**: Support for reading and embedding album artwork
 - **Pure Dart**: No native dependencies required
 - **Simple API**: Easy-to-use interface for metadata operations
 
 ## Supported Formats
 
-| Format | Metadata Standard | File Extensions |
-|--------|------------------|-----------------|
-| MP3    | ID3v2.4          | `.mp3`          |
-| FLAC   | Vorbis Comments  | `.flac`         |
+| Format | Metadata Standard | File Extensions | Read | Write |
+|--------|------------------|-----------------|------|-------|
+| MP3    | ID3v2.3/2.4      | `.mp3`          | ✓    | ✓     |
+| MP4/M4A | iTunes Metadata | `.mp4`, `.m4a`, `.m4v`, `.m4b` | ✓ | ✓ |
+| FLAC   | Vorbis Comments  | `.flac`         | ✓    | ✓     |
 
 ## Installation
 
@@ -29,7 +32,70 @@ dependencies:
 
 ## Usage
 
-### Basic Usage
+### Reading Metadata
+
+#### Basic Reading
+
+```dart
+import 'package:metatagger/metatagger.dart';
+
+void main() async {
+  final tagger = MetaTagger();
+  
+  // Read all metadata as a map
+  final tags = await tagger.readCommonTags('song.mp3');
+  
+  print('Title: ${tags[CommonTags.title]}');
+  print('Artist: ${tags[CommonTags.artist]}');
+  print('Album: ${tags[CommonTags.album]}');
+  print('Year: ${tags[CommonTags.year]}');
+}
+```
+
+#### Reading Specific Tags
+
+```dart
+import 'package:metatagger/metatagger.dart';
+
+void main() async {
+  final tagger = MetaTagger();
+  
+  // Read a specific tag
+  final titleTag = await tagger.readTag('song.mp3', CommonTags.title);
+  if (titleTag != null) {
+    print('Title: ${titleTag.value}');
+  }
+  
+  // Read all tags as MetadataTag objects
+  final allTags = await tagger.readTags('song.mp3');
+  for (final tag in allTags) {
+    print('${tag.key}: ${tag.value}');
+  }
+}
+```
+
+#### Reading Album Art
+
+```dart
+import 'package:metatagger/metatagger.dart';
+import 'dart:io';
+
+void main() async {
+  final tagger = MetaTagger();
+  
+  // Read album art
+  final artTag = await tagger.readTag('song.mp3', CommonTags.albumArt);
+  if (artTag != null && artTag.type == TagType.binary) {
+    // Save album art to file
+    await File('cover.jpg').writeAsBytes(artTag.value);
+    print('Album art extracted!');
+  }
+}
+```
+
+### Writing Metadata
+
+#### Basic Writing
 
 ```dart
 import 'package:metatagger/metatagger.dart';
@@ -49,7 +115,7 @@ void main() async {
 }
 ```
 
-### Writing Individual Tags
+#### Writing Individual Tags
 
 ```dart
 import 'package:metatagger/metatagger.dart';
@@ -132,6 +198,65 @@ void main() async {
 }
 ```
 
+### Advanced Examples
+
+#### Copy Metadata Between Files
+
+```dart
+import 'package:metatagger/metatagger.dart';
+
+void main() async {
+  final tagger = MetaTagger();
+  
+  // Read metadata from one file
+  final tags = await tagger.readTags('source.mp3');
+  
+  // Write to another file
+  await tagger.writeTags('destination.mp3', tags);
+}
+```
+
+#### Update Specific Tags
+
+```dart
+import 'package:metatagger/metatagger.dart';
+
+void main() async {
+  final tagger = MetaTagger();
+  
+  // Read existing tags
+  final existingTags = await tagger.readTags('song.mp3');
+  
+  // Filter out the tag you want to update
+  final updatedTags = existingTags.where((t) => t.key != CommonTags.year).toList();
+  
+  // Add the new value
+  updatedTags.add(MetadataTag.text(CommonTags.year, '2025'));
+  
+  // Write back
+  await tagger.writeTags('song.mp3', updatedTags);
+}
+```
+
+#### Migrate Metadata Between Formats
+
+```dart
+import 'package:metatagger/metatagger.dart';
+
+void main() async {
+  final tagger = MetaTagger();
+  
+  // Read from MP3
+  final tags = await tagger.readTags('song.mp3');
+  
+  // Write to FLAC or MP4
+  await tagger.writeTags('song.flac', tags);
+  await tagger.writeTags('song.m4a', tags);
+  
+  print('Metadata migrated across formats!');
+}
+```
+
 ### Checking File Support
 
 ```dart
@@ -142,6 +267,7 @@ void main() {
   
   // Check if a file format is supported
   print('MP3 supported: ${tagger.isSupported('test.mp3')}'); // true
+  print('MP4 supported: ${tagger.isSupported('test.m4a')}'); // true
   print('WAV supported: ${tagger.isSupported('test.wav')}'); // false
   
   // Get all supported extensions

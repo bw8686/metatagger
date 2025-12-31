@@ -1,21 +1,35 @@
 import 'dart:io';
 import 'metadata_tag.dart';
 import 'metadata_writer.dart';
+import 'metadata_reader.dart';
 import 'mp3_writer.dart';
+import 'mp3_reader.dart';
+import 'mp4_writer.dart';
+import 'mp4_reader.dart';
 import 'flac_writer.dart';
+import 'flac_reader.dart';
 
-/// Main class for writing metadata to audio files
+/// Main class for reading and writing metadata to audio files
 class MetaTagger {
   final List<MetadataWriter> _writers;
+  final List<MetadataReader> _readers;
 
-  /// Creates a MetaTagger instance with default writers for MP3 and FLAC
-  MetaTagger() : _writers = [Mp3Writer(), FlacWriter()];
+  /// Creates a MetaTagger instance with default writers and readers for MP3, MP4/M4A, and FLAC
+  MetaTagger()
+    : _writers = [Mp3Writer(), Mp4Writer(), FlacWriter()],
+      _readers = [Mp3Reader(), Mp4Reader(), FlacReader()];
 
-  /// Creates a MetaTagger instance with custom writers
-  MetaTagger.withWriters(this._writers);
+  /// Creates a MetaTagger instance with custom writers and readers
+  MetaTagger.withWritersAndReaders(this._writers, this._readers);
+
+  /// Creates a MetaTagger instance with custom writers (deprecated - use withWritersAndReaders)
+  @Deprecated('Use withWritersAndReaders instead')
+  MetaTagger.withWriters(List<MetadataWriter> writers)
+    : _writers = writers,
+      _readers = [Mp3Reader(), Mp4Reader(), FlacReader()];
 
   /// Writes metadata tags to an audio file
-  /// 
+  ///
   /// Automatically detects the file format and uses the appropriate writer.
   /// Throws [MetadataException] if the file format is not supported or if writing fails.
   Future<void> writeTags(String filePath, List<MetadataTag> tags) async {
@@ -29,7 +43,7 @@ class MetaTagger {
   }
 
   /// Writes common metadata tags using a convenient map interface
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// await tagger.writeCommonTags('song.mp3', {
@@ -38,7 +52,10 @@ class MetaTagger {
   ///   CommonTags.album: 'My Album',
   /// });
   /// ```
-  Future<void> writeCommonTags(String filePath, Map<String, dynamic> tags) async {
+  Future<void> writeCommonTags(
+    String filePath,
+    Map<String, dynamic> tags,
+  ) async {
     final metaTags = tags.entries.map((entry) {
       final value = entry.value;
       if (value is String) {
@@ -57,6 +74,46 @@ class MetaTagger {
   Future<void> clearTags(String filePath) async {
     final writer = _getWriterForFile(filePath);
     await writer.clearTags(filePath);
+  }
+
+  /// Reads all metadata tags from an audio file
+  ///
+  /// Automatically detects the file format and uses the appropriate reader.
+  /// Throws [MetadataException] if the file format is not supported or if reading fails.
+  Future<List<MetadataTag>> readTags(String filePath) async {
+    final reader = _getReaderForFile(filePath);
+    return await reader.readTags(filePath);
+  }
+
+  /// Reads a single metadata tag from an audio file
+  ///
+  /// Returns null if the tag is not found.
+  Future<MetadataTag?> readTag(String filePath, String key) async {
+    final reader = _getReaderForFile(filePath);
+    return await reader.readTag(filePath, key);
+  }
+
+  /// Reads common metadata tags and returns them as a convenient map
+  ///
+  /// Example:
+  /// ```dart
+  /// final tags = await tagger.readCommonTags('song.mp3');
+  /// print('Title: ${tags[CommonTags.title]}');
+  /// print('Artist: ${tags[CommonTags.artist]}');
+  /// ```
+  Future<Map<String, dynamic>> readCommonTags(String filePath) async {
+    final tags = await readTags(filePath);
+    final result = <String, dynamic>{};
+
+    for (final tag in tags) {
+      if (tag.type == TagType.binary) {
+        result[tag.key] = tag.value;
+      } else {
+        result[tag.key] = tag.value.toString();
+      }
+    }
+
+    return result;
   }
 
   /// Checks if a file format is supported
@@ -85,7 +142,22 @@ class MetaTagger {
         return writer;
       }
     }
-    
+
+    final extension = _getFileExtension(filePath);
+    throw MetadataException(
+      'Unsupported file format: $extension. Supported formats: ${supportedExtensions.join(', ')}',
+      filePath,
+    );
+  }
+
+  /// Gets the appropriate reader for a file
+  MetadataReader _getReaderForFile(String filePath) {
+    for (final reader in _readers) {
+      if (reader.supportsFile(filePath)) {
+        return reader;
+      }
+    }
+
     final extension = _getFileExtension(filePath);
     throw MetadataException(
       'Unsupported file format: $extension. Supported formats: ${supportedExtensions.join(', ')}',

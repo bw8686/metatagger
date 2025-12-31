@@ -8,7 +8,8 @@ void main() async {
   // NOTE: Place your source audio files in this directory:
   // - example.mp3 (source MP3 file)
   // - example.flac (source FLAC file)
-  // The script will create new files with metadata: example_with_metadata.mp3 and example_with_metadata.flac
+  // - example.mp4 (source MP4/M4A file)
+  // The script will create new files with metadata
 
   // Example: Writing metadata to an MP3 file
   print('Processing MP3 file...');
@@ -29,21 +30,24 @@ void main() async {
         MetadataTag.text(CommonTags.album, 'Great Album'),
         MetadataTag.text(CommonTags.artist, 'Amazing Artist, Featured Artist'),
         MetadataTag.text(CommonTags.albumArtist, 'Amazing Artist'),
-        
+
         // Track and disc information
         MetadataTag.text(CommonTags.track, '3'),
         MetadataTag.text(CommonTags.disc, '1'),
         MetadataTag.text(CommonTags.trackTotal, '12'),
         MetadataTag.text(CommonTags.discTotal, '2'),
-        
+
         // Release information
         MetadataTag.text(CommonTags.year, '2024'),
         MetadataTag.text(CommonTags.genre, 'Progressive Rock'),
-        
+
         // Additional metadata
         MetadataTag.text(CommonTags.bpm, '128'),
-        MetadataTag.text(CommonTags.lyrics, 'This is my awesome song\nWith multiple lines of lyrics\nShowing how great it sounds'),
-        
+        MetadataTag.text(
+          CommonTags.lyrics,
+          'This is my awesome song\nWith multiple lines of lyrics\nShowing how great it sounds',
+        ),
+
         // Custom fields
         MetadataTag.text(CommonTags.composer, 'John Doe'),
         MetadataTag.text('CUSTOM_FIELD', 'Custom Value'),
@@ -89,21 +93,24 @@ void main() async {
         MetadataTag.text(CommonTags.album, 'Great Album'),
         MetadataTag.text(CommonTags.artist, 'Amazing Artist, Featured Artist'),
         MetadataTag.text(CommonTags.albumArtist, 'Amazing Artist'),
-        
+
         // Track and disc information
         MetadataTag.text(CommonTags.track, '3'),
         MetadataTag.text(CommonTags.disc, '1'),
         MetadataTag.text(CommonTags.trackTotal, '12'),
         MetadataTag.text(CommonTags.discTotal, '2'),
-        
+
         // Release information
         MetadataTag.text(CommonTags.year, '2024'),
         MetadataTag.text(CommonTags.genre, 'Progressive Rock'),
-        
+
         // Additional metadata
         MetadataTag.text(CommonTags.bpm, '128'),
-        MetadataTag.text(CommonTags.lyrics, 'This is my awesome song\nWith multiple lines of lyrics\nShowing how great it sounds'),
-        
+        MetadataTag.text(
+          CommonTags.lyrics,
+          'This is my awesome song\nWith multiple lines of lyrics\nShowing how great it sounds',
+        ),
+
         // Custom fields
         MetadataTag.text(CommonTags.composer, 'John Doe'),
         MetadataTag.text('CUSTOM_FIELD', 'Custom Value'),
