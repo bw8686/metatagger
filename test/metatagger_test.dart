@@ -352,6 +352,22 @@ void main() {
         expect((readArt.value as Uint8List).length, greaterThan(0));
       });
 
+      test('should write and read custom tags from MP4', () async {
+        final testFile = File('${tempDir.path}/test_mp4_custom.mp4');
+        await _createMinimalMp4(testFile);
+
+        final customTag = MetadataTag.text('MY_CUSTOM_TAG', 'Custom MP4 Value');
+        await tagger.writeTag(testFile.path, customTag);
+
+        final readTags = await tagger.readTags(testFile.path);
+        expect(
+          readTags.any(
+            (t) => t.key == 'MY_CUSTOM_TAG' && t.value == 'Custom MP4 Value',
+          ),
+          isTrue,
+        );
+      });
+
       test('should use writeCommonTags and readCommonTags for MP4', () async {
         final testFile = File('${tempDir.path}/test_common.mp4');
         await _createMinimalMp4(testFile);

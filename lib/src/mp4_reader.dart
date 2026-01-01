@@ -95,9 +95,17 @@ class Mp4Reader extends MetadataReader {
       final atomName = latin1.decode(ilstData.sublist(offset + 4, offset + 8));
       final atomData = ilstData.sublist(offset + 8, offset + size);
 
-      final tag = _parseMetadataItem(atomName, atomData);
-      if (tag != null) {
-        tags.add(tag);
+      // Check if this is a freeform atom (----)
+      if (atomName == '----') {
+        final tag = _parseFreeformAtom(atomData);
+        if (tag != null) {
+          tags.add(tag);
+        }
+      } else {
+        final tag = _parseMetadataItem(atomName, atomData);
+        if (tag != null) {
+          tags.add(tag);
+        }
       }
 
       offset += size;
@@ -149,6 +157,49 @@ class Mp4Reader extends MetadataReader {
     } catch (e) {
       return null;
     }
+  }
+
+  /// Parses a freeform ---- atom (custom tag)
+  MetadataTag? _parseFreeformAtom(Uint8List atomData) {
+    // Freeform atom contains: mean atom, name atom, and data atom
+
+    // Find name atom to get the tag key
+    final nameAtom = _findAtom(atomData, 'name');
+    if (nameAtom == null || nameAtom.length < 4) return null;
+
+    // Skip version + flags (4 bytes)
+    final tagKey = utf8.decode(nameAtom.sublist(4));
+    if (tagKey.isEmpty) return null;
+
+    // Find data atom to get the value
+    final dataAtom = _findAtom(atomData, 'data');
+    if (dataAtom == null || dataAtom.length < 8) return null;
+
+    // Data atom format: version(1) + flags(3) + type indicator + locale(4) + actual data
+    final dataType = dataAtom[3];
+    final content = dataAtom.sublist(8);
+
+    // Parse based on data type
+    if (dataType == 0x01 || dataType == 0x00) {
+      // UTF-8 text
+      try {
+        final text = utf8.decode(content).trim();
+        return text.isNotEmpty ? MetadataTag.text(tagKey, text) : null;
+      } catch (e) {
+        return null;
+      }
+    } else if (dataType == 0x15) {
+      // Signed integer
+      if (content.length >= 4) {
+        final value = _readUint32(content, 0);
+        return MetadataTag.number(tagKey, value);
+      }
+    } else {
+      // Binary data
+      return content.isNotEmpty ? MetadataTag.binary(tagKey, content) : null;
+    }
+
+    return null;
   }
 
   /// Parses track or disc number

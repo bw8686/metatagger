@@ -117,7 +117,14 @@ class Mp4Writer extends MetadataWriter {
   /// Creates a metadata item
   List<int> _createMetadataItem(MetadataTag tag) {
     final atomName = _getAtomName(tag.key);
-    if (atomName.isEmpty) return [];
+
+    // Check if this is a custom tag (not in standard iTunes atoms)
+    final isCustomTag = _isCustomTag(tag.key);
+
+    if (isCustomTag) {
+      // Use freeform ---- atom for custom tags
+      return _createFreeformAtom(tag);
+    }
 
     List<int> dataAtom;
 
@@ -296,6 +303,75 @@ class Mp4Writer extends MetadataWriter {
     return atoms;
   }
 
+  /// Checks if a tag is a custom tag (not a standard iTunes atom)
+  bool _isCustomTag(String tagKey) {
+    final standardTags = {
+      'TITLE',
+      'ARTIST',
+      'ALBUM',
+      'ALBUMARTIST',
+      'DATE',
+      'YEAR',
+      'GENRE',
+      'TRACKNUMBER',
+      'DISCNUMBER',
+      'COMMENT',
+      'COMPOSER',
+      'ENCODEDBY',
+      'COPYRIGHT',
+      'LYRICS',
+      'ALBUMART',
+      'BPM',
+    };
+    return !standardTags.contains(tagKey.toUpperCase());
+  }
+
+  /// Creates a freeform ---- atom for custom tags
+  List<int> _createFreeformAtom(MetadataTag tag) {
+    // Freeform atom structure:
+    // ---- atom
+    //   mean atom (namespace)
+    //   name atom (tag name)
+    //   data atom (value)
+
+    final namespace = 'com.apple.iTunes';
+
+    // Create mean atom (namespace)
+    final meanContent = <int>[
+      0x00, 0x00, 0x00, 0x00, // version + flags
+      ...utf8.encode(namespace),
+    ];
+    final meanAtom = _wrapAtom('mean', Uint8List.fromList(meanContent));
+
+    // Create name atom (tag name)
+    final nameContent = <int>[
+      0x00, 0x00, 0x00, 0x00, // version + flags
+      ...utf8.encode(tag.key),
+    ];
+    final nameAtom = _wrapAtom('name', Uint8List.fromList(nameContent));
+
+    // Create data atom (value)
+    List<int> dataAtom;
+    if (tag.type == TagType.binary) {
+      dataAtom = _createDataAtom(tag.value as Uint8List, 0x00);
+    } else if (tag.type == TagType.number) {
+      dataAtom = _createDataAtom(
+        Uint8List.fromList(utf8.encode(tag.value.toString())),
+        0x01,
+      );
+    } else {
+      dataAtom = _createDataAtom(
+        Uint8List.fromList(utf8.encode(tag.value.toString())),
+        0x01,
+      );
+    }
+
+    // Combine into ---- atom
+    final freeformContent = <int>[...meanAtom, ...nameAtom, ...dataAtom];
+
+    return _wrapAtom('----', Uint8List.fromList(freeformContent));
+  }
+
   /// Maps common tag keys to MP4 atom names
   String _getAtomName(String tagKey) {
     switch (tagKey.toUpperCase()) {
@@ -331,8 +407,8 @@ class Mp4Writer extends MetadataWriter {
       case 'BPM':
         return 'tmpo';
       default:
-        // For custom tags, use ---- atom (not implemented for simplicity)
-        return '';
+        // Return the tag key itself for custom tags (will use freeform atom)
+        return tagKey;
     }
   }
 

@@ -134,16 +134,52 @@ void main() async {
 
 ### Custom Tags
 
+All formats support custom tags for storing application-specific metadata.
+
+#### MP3 Custom Tags
+
 ```dart
 import 'package:metatagger/metatagger.dart';
 
 void main() async {
   final tagger = MetaTagger();
   
-  // Write custom tags
+  // MP3 stores custom tags as TXXX frames
   await tagger.writeTag('song.mp3', 
     MetadataTag.text('CUSTOM_FIELD', 'Custom Value'));
+}
+```
+
+#### MP4/M4A Custom Tags
+
+```dart
+import 'package:metatagger/metatagger.dart';
+
+void main() async {
+  final tagger = MetaTagger();
   
+  // MP4 stores custom tags as freeform (----) atoms
+  // with namespace com.apple.iTunes
+  await tagger.writeTag('song.m4a', 
+    MetadataTag.text('MOOD', 'Energetic'));
+  
+  await tagger.writeTag('song.m4a', 
+    MetadataTag.text('PRODUCER', 'John Producer'));
+  
+  await tagger.writeTag('song.m4a', 
+    MetadataTag.text('ISRC', 'USIR12345678'));
+}
+```
+
+#### FLAC Custom Tags
+
+```dart
+import 'package:metatagger/metatagger.dart';
+
+void main() async {
+  final tagger = MetaTagger();
+  
+  // FLAC stores custom tags as Vorbis comments
   await tagger.writeTag('song.flac', 
     MetadataTag.text('MY_CUSTOM_TAG', 'Some custom data'));
 }

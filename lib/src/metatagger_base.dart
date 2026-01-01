@@ -38,8 +38,21 @@ class MetaTagger {
   }
 
   /// Writes a single metadata tag to an audio file
+  ///
+  /// This method merges the tag with existing tags rather than replacing all tags.
+  /// If a tag with the same key exists, it will be replaced.
   Future<void> writeTag(String filePath, MetadataTag tag) async {
-    await writeTags(filePath, [tag]);
+    // Read existing tags
+    final existingTags = await readTags(filePath);
+
+    // Remove any existing tag with the same key
+    final filteredTags = existingTags.where((t) => t.key != tag.key).toList();
+
+    // Add the new tag
+    filteredTags.add(tag);
+
+    // Write all tags back
+    await writeTags(filePath, filteredTags);
   }
 
   /// Writes common metadata tags using a convenient map interface

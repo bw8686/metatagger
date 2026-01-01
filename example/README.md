@@ -26,12 +26,25 @@ Complete MP4/M4A metadata handling including:
 - Reading existing metadata
 - Writing new tags
 - Updating specific fields
-- Adding custom tags
+- Adding album art
 - Working with video files
 
 ```bash
 cd example
 dart run mp4_example.dart
+```
+
+#### `mp4_custom_tags_example.dart`
+Advanced MP4/M4A custom tag support:
+- Using freeform (----) atoms for custom tags
+- Storing production credits (Producer, Mixer, Engineer)
+- Catalog information (ISRC, Label, Catalog Number)
+- Musical metadata (Mood, Style, Key, BPM)
+- Compatible with iTunes and Music.app
+
+```bash
+cd example
+dart run mp4_custom_tags_example.dart
 ```
 
 ### 🔄 Advanced Examples
@@ -60,6 +73,29 @@ dart run format_migration_example.dart
 ```
 
 ### 📚 Reference Examples
+
+#### `album_art_example.dart`
+Dedicated album art operations:
+- Adding album art to files
+- Reading and extracting album art
+- Replacing existing album art
+- Removing album art
+
+```bash
+cd example
+dart run album_art_example.dart
+```
+
+#### `read_existing_metadata.dart`
+Compatibility testing with external tools:
+- Reading metadata written by other applications
+- Verifying cross-tool compatibility
+- Extracting album art from externally tagged files
+
+```bash
+cd example
+dart run read_existing_metadata.dart
+```
 
 #### `metatagger_example.dart`
 Comprehensive example showing all features for MP3 and FLAC.

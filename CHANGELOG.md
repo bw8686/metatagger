@@ -1,3 +1,13 @@
+## 2.0.1
+
+- **MP4 Custom Tags**: Added full support for custom metadata in MP4/M4A files
+  - Custom tags stored as freeform (----) atoms with `com.apple.iTunes` namespace
+  - Compatible with iTunes, Music.app, and other players
+  - Supports text, number, and binary custom tags
+- Fixed `writeTag()` method to properly merge with existing tags instead of replacing all metadata
+- Added `mp4_custom_tags_example.dart` demonstrating advanced custom tag usage
+- Added test coverage for MP4 custom tags 
+
 ## 2.0.0
 
 - **BREAKING**: Added read functionality - major feature addition
