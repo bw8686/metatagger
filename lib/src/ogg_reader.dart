@@ -59,7 +59,6 @@ class OggReader extends MetadataReader {
         continue;
       }
 
-      int headerType = bytes[offset + 5];
       int pageSegments = bytes[offset + 26];
       int segmentTableOffset = offset + 27;
 

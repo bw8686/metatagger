@@ -189,8 +189,9 @@ class OggWriter extends MetadataWriter {
   String _detectMimeType(Uint8List imageData) {
     if (imageData.length >= 2) {
       if (imageData[0] == 0xFF && imageData[1] == 0xD8) return 'image/jpeg';
-      if (imageData.length >= 8 && imageData[0] == 0x89 && imageData[1] == 0x50)
+      if (imageData.length >= 8 && imageData[0] == 0x89 && imageData[1] == 0x50) {
         return 'image/png';
+      }
     }
     return 'image/jpeg';
   }
