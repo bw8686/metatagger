@@ -1,5 +1,13 @@
 ## 2.1.0
 
+- **In-Memory Parsing**: Added support for parsing and writing metadata directly from/to `Uint8List` byte arrays without using physical files.
+  - Added `readTagsFromBytes(Uint8List bytes)` method
+  - Added `writeTagsToBytes(Uint8List bytes, List<MetadataTag> tags)` method
+  - Added `clearTagsFromBytes(Uint8List bytes)` method
+  - Magic number detection automatically routes the buffer to the correct parser without needing file extensions
+- Backwards compatible: File-based methods use the byte-level methods internally
+- Added comprehensive in-memory parsing integration tests
+- Added `memory_example.dart` example script
 - **OGG Support**: Added read and write support for Ogg Vorbis metadata
   - Implemented `OggReader` for extracting Vorbis Comments and Album Art from `.ogg` files
   - Implemented a pure Dart Ogg multiplexer (`OggWriter`) capable of repaginating files to safely modify tags without breaking the container stream

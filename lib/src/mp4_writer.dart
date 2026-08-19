@@ -25,25 +25,35 @@ class Mp4Writer extends MetadataWriter {
     final file = File(filePath);
     final bytes = await file.readAsBytes();
 
+    final newBytes = await writeTagsToBytes(bytes, tags);
+    await file.writeAsBytes(newBytes);
+  }
+
+  @override
+  Future<Uint8List> writeTagsToBytes(Uint8List bytes, List<MetadataTag> tags) async {
     // Parse MP4 structure
     final mp4Data = _parseMp4File(bytes);
     if (mp4Data == null) {
-      throw MetadataException('Invalid MP4 file format', filePath);
+      throw MetadataException('Invalid MP4 file format', 'MemoryBuffer');
     }
 
     // Create new metadata atom
     final metaAtom = _createMetadataAtom(tags);
 
     // Replace or add metadata in moov.udta
-    final newBytes = _replaceMetadata(mp4Data, metaAtom);
-
-    // Write updated file
-    await file.writeAsBytes(newBytes);
+    return _replaceMetadata(mp4Data, metaAtom);
   }
 
   @override
   Future<void> clearTags(String filePath) async {
     await writeTags(filePath, []);
+  }
+
+  @override
+  bool supportsBytes(Uint8List bytes) {
+    if (bytes.length < 8) return false;
+    // Check for ftyp atom at offset 4
+    return bytes[4] == 0x66 && bytes[5] == 0x74 && bytes[6] == 0x79 && bytes[7] == 0x70;
   }
 
   /// Parses MP4 file structure

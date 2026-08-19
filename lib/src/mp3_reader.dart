@@ -21,7 +21,24 @@ class Mp3Reader extends MetadataReader {
     final file = File(filePath);
     final bytes = await file.readAsBytes();
 
+    return readTagsFromBytes(bytes);
+  }
+
+  @override
+  Future<List<MetadataTag>> readTagsFromBytes(Uint8List bytes) async {
     return _parseId3v2Tag(bytes);
+  }
+
+  @override
+  bool supportsBytes(Uint8List bytes) {
+    if (bytes.length < 3) return false;
+    // Check for ID3v2 header
+    if (bytes[0] == 0x49 && bytes[1] == 0x44 && bytes[2] == 0x33) return true;
+    
+    // Check for MP3 frame sync word (11 bits set to 1)
+    if (bytes.length >= 2 && bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0) return true;
+    
+    return false;
   }
 
   /// Parses ID3v2 tag from MP3 data

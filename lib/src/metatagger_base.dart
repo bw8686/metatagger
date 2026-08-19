@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'metadata_tag.dart';
 import 'metadata_writer.dart';
 import 'metadata_reader.dart';
@@ -186,5 +187,55 @@ class MetaTagger {
     final name = file.path.toLowerCase();
     final lastDot = name.lastIndexOf('.');
     return lastDot >= 0 ? name.substring(lastDot) : '';
+  }
+
+  /// Writes metadata tags directly to a byte array and returns the modified byte array
+  /// 
+  /// Automatically detects the audio format from the bytes magic header.
+  /// Throws [MetadataException] if the format is not supported or if writing fails.
+  Future<Uint8List> writeTagsToBytes(Uint8List bytes, List<MetadataTag> tags) async {
+    final writer = _getWriterForBytes(bytes);
+    return await writer.writeTagsToBytes(bytes, tags);
+  }
+
+  /// Removes all metadata from a byte array and returns the modified byte array
+  Future<Uint8List> clearTagsFromBytes(Uint8List bytes) async {
+    final writer = _getWriterForBytes(bytes);
+    return await writer.clearTagsFromBytes(bytes);
+  }
+
+  /// Reads all metadata tags directly from a byte array
+  /// 
+  /// Automatically detects the audio format from the bytes magic header.
+  /// Throws [MetadataException] if the format is not supported or if reading fails.
+  Future<List<MetadataTag>> readTagsFromBytes(Uint8List bytes) async {
+    final reader = _getReaderForBytes(bytes);
+    return await reader.readTagsFromBytes(bytes);
+  }
+
+  /// Gets the appropriate writer for a byte array
+  MetadataWriter _getWriterForBytes(Uint8List bytes) {
+    for (final writer in _writers) {
+      if (writer.supportsBytes(bytes)) {
+        return writer;
+      }
+    }
+    throw MetadataException(
+      'Unsupported file format in byte array. Supported formats: ${supportedExtensions.join(', ')}',
+      'MemoryBuffer',
+    );
+  }
+
+  /// Gets the appropriate reader for a byte array
+  MetadataReader _getReaderForBytes(Uint8List bytes) {
+    for (final reader in _readers) {
+      if (reader.supportsBytes(bytes)) {
+        return reader;
+      }
+    }
+    throw MetadataException(
+      'Unsupported file format in byte array. Supported formats: ${supportedExtensions.join(', ')}',
+      'MemoryBuffer',
+    );
   }
 }

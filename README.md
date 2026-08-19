@@ -236,6 +236,30 @@ void main() async {
 }
 ```
 
+### In-Memory Parsing (No Disk I/O)
+
+You can read and write metadata directly from/to `Uint8List` byte buffers without needing physical file paths. The format is automatically detected from the buffer's magic header.
+
+```dart
+import 'dart:typed_data';
+import 'package:metatagger/metatagger.dart';
+
+void main() async {
+  final tagger = MetaTagger();
+  
+  // Assume we have an audio file loaded into a Uint8List from network/memory
+  Uint8List audioBytes = ...;
+  
+  // Read tags directly from bytes
+  final tags = await tagger.readTagsFromBytes(audioBytes);
+  
+  // Modify tags in memory (returns a new modified Uint8List)
+  final modifiedBytes = await tagger.writeTagsToBytes(audioBytes, [
+    MetadataTag.text(CommonTags.title, 'In-Memory Song'),
+  ]);
+}
+```
+
 ### Advanced Examples
 
 #### Copy Metadata Between Files

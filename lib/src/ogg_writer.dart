@@ -81,6 +81,12 @@ class OggWriter extends MetadataWriter {
     final file = File(filePath);
     final bytes = await file.readAsBytes();
 
+    final newBytes = await writeTagsToBytes(bytes, tags);
+    await file.writeAsBytes(newBytes);
+  }
+
+  @override
+  Future<Uint8List> writeTagsToBytes(Uint8List bytes, List<MetadataTag> tags) async {
     final textTags = tags
         .where((tag) => tag.key != CommonTags.albumArt)
         .toList();
@@ -92,11 +98,11 @@ class OggWriter extends MetadataWriter {
     final newOggData = _replaceVorbisCommentInOgg(bytes, vorbisComment);
 
     if (newOggData != null) {
-      await file.writeAsBytes(newOggData);
+      return newOggData;
     } else {
       throw MetadataException(
         'Failed to write Ogg tags: Could not parse Ogg stream.',
-        filePath,
+        'MemoryBuffer',
       );
     }
   }
@@ -104,6 +110,13 @@ class OggWriter extends MetadataWriter {
   @override
   Future<void> clearTags(String filePath) async {
     await writeTags(filePath, []);
+  }
+
+  @override
+  bool supportsBytes(Uint8List bytes) {
+    if (bytes.length < 4) return false;
+    // Check for OggS signature
+    return bytes[0] == 0x4F && bytes[1] == 0x67 && bytes[2] == 0x67 && bytes[3] == 0x53;
   }
 
   Uint8List _createVorbisCommentPacket(

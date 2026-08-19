@@ -21,7 +21,19 @@ class FlacReader extends MetadataReader {
     final file = File(filePath);
     final bytes = await file.readAsBytes();
 
+    return readTagsFromBytes(bytes);
+  }
+
+  @override
+  Future<List<MetadataTag>> readTagsFromBytes(Uint8List bytes) async {
     return _parseFlacMetadata(bytes);
+  }
+
+  @override
+  bool supportsBytes(Uint8List bytes) {
+    if (bytes.length < 4) return false;
+    // Check for fLaC signature
+    return bytes[0] == 0x66 && bytes[1] == 0x4C && bytes[2] == 0x61 && bytes[3] == 0x43;
   }
 
   /// Parses FLAC metadata blocks

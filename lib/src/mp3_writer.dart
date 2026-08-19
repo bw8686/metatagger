@@ -21,6 +21,12 @@ class Mp3Writer extends MetadataWriter {
     final file = File(filePath);
     final bytes = await file.readAsBytes();
 
+    final newBytes = await writeTagsToBytes(bytes, tags);
+    await file.writeAsBytes(newBytes);
+  }
+
+  @override
+  Future<Uint8List> writeTagsToBytes(Uint8List bytes, List<MetadataTag> tags) async {
     // Remove existing ID3v2 tag if present
     final audioData = _removeExistingId3v2Tag(bytes);
 
@@ -28,8 +34,7 @@ class Mp3Writer extends MetadataWriter {
     final id3v2Tag = _createId3v2Tag(tags);
 
     // Write new file with ID3v2 tag at the beginning
-    final newBytes = Uint8List.fromList([...id3v2Tag, ...audioData]);
-    await file.writeAsBytes(newBytes);
+    return Uint8List.fromList([...id3v2Tag, ...audioData]);
   }
 
   @override
@@ -39,11 +44,20 @@ class Mp3Writer extends MetadataWriter {
     final file = File(filePath);
     final bytes = await file.readAsBytes();
 
-    // Remove existing ID3v2 tag
-    final audioData = _removeExistingId3v2Tag(bytes);
+    final newBytes = await clearTagsFromBytes(bytes);
+    await file.writeAsBytes(newBytes);
+  }
 
-    // Write file without ID3v2 tag
-    await file.writeAsBytes(audioData);
+  @override
+  bool supportsBytes(Uint8List bytes) {
+    if (bytes.length < 3) return false;
+    // Check for ID3v2 header
+    if (bytes[0] == 0x49 && bytes[1] == 0x44 && bytes[2] == 0x33) return true;
+    
+    // Check for MP3 frame sync word (11 bits set to 1)
+    if (bytes.length >= 2 && bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0) return true;
+    
+    return false;
   }
 
   /// Removes existing ID3v2 tag from MP3 data

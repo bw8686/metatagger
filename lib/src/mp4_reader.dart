@@ -25,7 +25,19 @@ class Mp4Reader extends MetadataReader {
     final file = File(filePath);
     final bytes = await file.readAsBytes();
 
+    return readTagsFromBytes(bytes);
+  }
+
+  @override
+  Future<List<MetadataTag>> readTagsFromBytes(Uint8List bytes) async {
     return _parseMp4Metadata(bytes);
+  }
+
+  @override
+  bool supportsBytes(Uint8List bytes) {
+    if (bytes.length < 8) return false;
+    // Check for ftyp atom at offset 4
+    return bytes[4] == 0x66 && bytes[5] == 0x74 && bytes[6] == 0x79 && bytes[7] == 0x70;
   }
 
   /// Parses MP4 metadata
