@@ -1,6 +1,6 @@
 # MetaTagger
 
-A pure Dart library for reading and writing metadata to MP3, MP4/M4A, and FLAC files with custom tag support.
+A pure Dart library for reading and writing metadata to MP3, MP4/M4A, FLAC, and OGG files with custom tag support.
 
 ## Features
 
@@ -8,6 +8,7 @@ A pure Dart library for reading and writing metadata to MP3, MP4/M4A, and FLAC f
 - **MP3 Support**: Read and write ID3v2 tags to MP3 files
 - **MP4/M4A Support**: Read and write iTunes-style metadata to MP4/M4A files
 - **FLAC Support**: Read and write Vorbis Comments to FLAC files  
+- **OGG Support**: Read and write Vorbis Comments to OGG files  
 - **Custom Tags**: Support for custom metadata fields
 - **Album Art**: Support for reading and embedding album artwork
 - **Pure Dart**: No native dependencies required
@@ -20,6 +21,7 @@ A pure Dart library for reading and writing metadata to MP3, MP4/M4A, and FLAC f
 | MP3    | ID3v2.3/2.4      | `.mp3`          | ✓    | ✓     |
 | MP4/M4A | iTunes Metadata | `.mp4`, `.m4a`, `.m4v`, `.m4b` | ✓ | ✓ |
 | FLAC   | Vorbis Comments  | `.flac`         | ✓    | ✓     |
+| OGG    | Vorbis Comments  | `.ogg`          | ✓    | ✓     |
 
 ## Installation
 

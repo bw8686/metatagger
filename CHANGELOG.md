@@ -1,5 +1,13 @@
-## 2.0.1
+## 2.1.0
 
+- **OGG Support**: Added read and write support for Ogg Vorbis metadata
+  - Implemented `OggReader` for extracting Vorbis Comments and Album Art from `.ogg` files
+  - Implemented a pure Dart Ogg multiplexer (`OggWriter`) capable of repaginating files to safely modify tags without breaking the container stream
+  - Implemented an Ogg-specific CRC32 checksum generator for compliant file manipulation
+- Added comprehensive OGG read/write integration tests
+- Updated example scripts (`read_example.dart`, `read_write_example.dart`, `metatagger_example.dart`) to demonstrate Ogg capabilities
+
+## 2.0.1
 - **MP4 Custom Tags**: Added full support for custom metadata in MP4/M4A files
   - Custom tags stored as freeform (----) atoms with `com.apple.iTunes` namespace
   - Compatible with iTunes, Music.app, and other players

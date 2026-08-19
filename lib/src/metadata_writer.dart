@@ -23,7 +23,7 @@ abstract class MetadataWriter {
   /// Validates that the file exists and is readable/writable
   Future<void> validateFile(String filePath) async {
     final file = File(filePath);
-    
+
     if (!await file.exists()) {
       throw MetadataException('File does not exist', filePath);
     }
@@ -37,7 +37,8 @@ abstract class MetadataWriter {
 
     // Check if we can write to the file
     final stat = await file.stat();
-    if (stat.mode & 0x80 == 0) { // Check write permission
+    if (stat.mode & 0x80 == 0) {
+      // Check write permission
       throw MetadataException('File is not writable', filePath);
     }
   }

@@ -44,11 +44,7 @@ class MetadataTag {
 }
 
 /// Types of metadata tags
-enum TagType {
-  text,
-  binary,
-  number,
-}
+enum TagType { text, binary, number }
 
 /// Common metadata tag keys
 class CommonTags {

@@ -162,7 +162,7 @@ class Mp3Writer extends MetadataWriter {
   List<int> _createPictureFrame(Uint8List imageData) {
     final mimeType = _detectMimeType(imageData);
     final mimeBytes = utf8.encode(mimeType);
-    
+
     return [
       0x00, // Text encoding: ISO-8859-1 (simpler than UTF-8 for description)
       ...mimeBytes,
@@ -257,5 +257,4 @@ class Mp3Writer extends MetadataWriter {
       value & 0x7F,
     ];
   }
-
 }

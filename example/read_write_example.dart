@@ -15,6 +15,9 @@ void main() async {
 
   // Example 3: Migrate metadata between formats (MP3 to FLAC)
   await migrateMetadataExample(tagger);
+
+  // Example 4: Write metadata to an OGG file
+  await writeOggExample(tagger);
 }
 
 /// Example: Copy metadata from one file to another
@@ -191,6 +194,64 @@ Future<void> editInPlaceExample(MetaTagger tagger, String filePath) async {
     print('\nUpdated metadata:');
     print('  Title: ${newTags[CommonTags.title]}');
     print('  Artist: ${newTags[CommonTags.artist]}');
+
+    print('');
+  } catch (e) {
+    print('✗ Error: $e\n');
+  }
+}
+
+/// Example: Write metadata to an OGG file
+Future<void> writeOggExample(MetaTagger tagger) async {
+  print('--- Writing Metadata to OGG File ---');
+
+  final oggFile = File('example/example.ogg');
+  final testFile = File('example/example_write_test.ogg');
+
+  if (!await oggFile.exists()) {
+    print(
+      '✗ OGG file not found. Please ensure example.ogg exists in the example/ directory.\n',
+    );
+    return;
+  }
+
+  try {
+    // Copy to a test file so we don't modify the original
+    await oggFile.copy(testFile.path);
+
+    // Read artwork image
+    final artworkFile = File('example/example.jpg');
+    List<int>? artworkData;
+    if (await artworkFile.exists()) {
+      artworkData = await artworkFile.readAsBytes();
+    }
+
+    final tags = [
+      MetadataTag.text(CommonTags.title, 'Test OGG Title'),
+      MetadataTag.text(CommonTags.artist, 'Test OGG Artist'),
+      MetadataTag.text(CommonTags.album, 'Test OGG Album'),
+      MetadataTag.number(CommonTags.year, 2026),
+      MetadataTag.text(CommonTags.genre, 'Test Genre'),
+    ];
+
+    if (artworkData != null) {
+      tags.add(MetadataTag.binary(CommonTags.albumArt, artworkData as dynamic));
+    }
+
+    await tagger.writeTags(testFile.path, tags);
+    print('✓ Successfully wrote tags to ${testFile.path}');
+
+    // Read back to verify
+    final verifyTags = await tagger.readCommonTags(testFile.path);
+    print('✓ Verification:');
+    print('  Title: ${verifyTags[CommonTags.title]}');
+    print('  Artist: ${verifyTags[CommonTags.artist]}');
+    print('  Year: ${verifyTags[CommonTags.year]}');
+
+    if (verifyTags.containsKey(CommonTags.albumArt)) {
+      final artData = verifyTags[CommonTags.albumArt];
+      print('  Album Art: ${artData.length} bytes');
+    }
 
     print('');
   } catch (e) {

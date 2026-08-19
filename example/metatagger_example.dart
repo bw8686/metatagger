@@ -139,6 +139,69 @@ void main() async {
     print('✗ Error processing FLAC: $e');
   }
 
+  // Example: Writing metadata to an OGG file
+  print('\nProcessing OGG file...');
+
+  try {
+    final sourceOGG = File('example/example.ogg');
+    final outputOGG = File('example/example_with_metadata.ogg');
+
+    if (await sourceOGG.exists()) {
+      await sourceOGG.copy(outputOGG.path);
+      print('✓ Copied example.ogg → example_with_metadata.ogg');
+
+      final tags = <MetadataTag>[
+        // Basic metadata
+        MetadataTag.text(CommonTags.title, 'My Awesome Song'),
+        MetadataTag.text(CommonTags.album, 'Great Album'),
+        MetadataTag.text(CommonTags.artist, 'Amazing Artist, Featured Artist'),
+        MetadataTag.text(CommonTags.albumArtist, 'Amazing Artist'),
+
+        // Track and disc information
+        MetadataTag.text(CommonTags.track, '3'),
+        MetadataTag.text(CommonTags.disc, '1'),
+        MetadataTag.text(CommonTags.trackTotal, '12'),
+        MetadataTag.text(CommonTags.discTotal, '2'),
+
+        // Release information
+        MetadataTag.text(CommonTags.year, '2024'),
+        MetadataTag.text(CommonTags.genre, 'Progressive Rock'),
+
+        // Additional metadata
+        MetadataTag.text(CommonTags.bpm, '128'),
+        MetadataTag.text(
+          CommonTags.lyrics,
+          'This is my awesome song\nWith multiple lines of lyrics\nShowing how great it sounds',
+        ),
+
+        // Custom fields
+        MetadataTag.text(CommonTags.composer, 'John Doe'),
+        MetadataTag.text('CUSTOM_FIELD', 'Custom Value'),
+      ];
+
+      // Add album art if available
+      final albumArtFile = File('example/example.jpg');
+      if (await albumArtFile.exists()) {
+        final albumArtBytes = await albumArtFile.readAsBytes();
+        tags.add(MetadataTag.binary(CommonTags.albumArt, albumArtBytes));
+        print('✓ Album art prepared for OGG (${albumArtBytes.length} bytes)');
+      } else {
+        print('⚠ Album art file not found');
+      }
+
+      // Write all metadata in a single operation
+      await tagger.writeTags(outputOGG.path, tags);
+
+      print('✓ Successfully wrote metadata to OGG file!');
+    } else {
+      print(
+        '✗ Source file example.ogg not found. Please add an OGG file to test.',
+      );
+    }
+  } catch (e) {
+    print('✗ Error processing OGG: $e');
+  }
+
   // Check supported formats
   print('\nSupported file formats: ${tagger.supportedExtensions.join(', ')}');
 

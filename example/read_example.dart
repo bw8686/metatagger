@@ -13,10 +13,13 @@ void main() async {
   // Example 2: Reading metadata from a FLAC file
   await readFlacExample(tagger);
 
-  // Example 3: Reading specific tags
+  // Example 3: Reading metadata from an OGG file
+  await readOggExample(tagger);
+
+  // Example 4: Reading specific tags
   await readSpecificTagsExample(tagger);
 
-  // Example 4: Reading and displaying all tags
+  // Example 5: Reading and displaying all tags
   await readAllTagsExample(tagger);
 }
 
@@ -97,6 +100,42 @@ Future<void> readFlacExample(MetaTagger tagger) async {
     print('');
   } catch (e) {
     print('✗ Error reading FLAC: $e\n');
+  }
+}
+
+/// Example: Reading metadata from an OGG file
+Future<void> readOggExample(MetaTagger tagger) async {
+  print('--- Reading OGG File ---');
+
+  final oggFile = File('example/example.ogg');
+
+  if (!await oggFile.exists()) {
+    print(
+      '✗ OGG file not found. Please ensure example.ogg exists in the example/ directory.\n',
+    );
+    return;
+  }
+
+  try {
+    // Read all tags
+    final tags = await tagger.readCommonTags(oggFile.path);
+
+    print('✓ Successfully read OGG metadata:');
+    print('  Title: ${tags[CommonTags.title] ?? 'N/A'}');
+    print('  Artist: ${tags[CommonTags.artist] ?? 'N/A'}');
+    print('  Album: ${tags[CommonTags.album] ?? 'N/A'}');
+    print('  Year: ${tags[CommonTags.year] ?? 'N/A'}');
+    print('  Genre: ${tags[CommonTags.genre] ?? 'N/A'}');
+
+    // Check for album art
+    if (tags.containsKey(CommonTags.albumArt)) {
+      final artData = tags[CommonTags.albumArt];
+      print('  Album Art: ${artData.length} bytes');
+    }
+
+    print('');
+  } catch (e) {
+    print('✗ Error reading OGG: $e\n');
   }
 }
 

@@ -8,16 +8,18 @@ import 'mp4_writer.dart';
 import 'mp4_reader.dart';
 import 'flac_writer.dart';
 import 'flac_reader.dart';
+import 'ogg_writer.dart';
+import 'ogg_reader.dart';
 
 /// Main class for reading and writing metadata to audio files
 class MetaTagger {
   final List<MetadataWriter> _writers;
   final List<MetadataReader> _readers;
 
-  /// Creates a MetaTagger instance with default writers and readers for MP3, MP4/M4A, and FLAC
+  /// Creates a MetaTagger instance with default writers and readers for MP3, MP4/M4A, FLAC, and OGG
   MetaTagger()
-    : _writers = [Mp3Writer(), Mp4Writer(), FlacWriter()],
-      _readers = [Mp3Reader(), Mp4Reader(), FlacReader()];
+    : _writers = [Mp3Writer(), Mp4Writer(), FlacWriter(), OggWriter()],
+      _readers = [Mp3Reader(), Mp4Reader(), FlacReader(), OggReader()];
 
   /// Creates a MetaTagger instance with custom writers and readers
   MetaTagger.withWritersAndReaders(this._writers, this._readers);
@@ -26,7 +28,7 @@ class MetaTagger {
   @Deprecated('Use withWritersAndReaders instead')
   MetaTagger.withWriters(List<MetadataWriter> writers)
     : _writers = writers,
-      _readers = [Mp3Reader(), Mp4Reader(), FlacReader()];
+      _readers = [Mp3Reader(), Mp4Reader(), FlacReader(), OggReader()];
 
   /// Writes metadata tags to an audio file
   ///
