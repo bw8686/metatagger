@@ -51,8 +51,9 @@ class Mp3Reader extends MetadataReader {
     if (bytes.length >= 2 &&
         bytes[0] == 0xFF &&
         (bytes[1] & 0xE0) == 0xE0 &&
-        (bytes[1] & 0x06) != 0)
+        (bytes[1] & 0x06) != 0) {
       return true;
+    }
 
     return false;
   }
