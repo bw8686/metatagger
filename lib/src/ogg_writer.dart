@@ -64,14 +64,15 @@ class _OggPage {
   }
 }
 
-/// OGG Vorbis Comment metadata writer
+/// OGG Vorbis/Opus metadata writer.
 class OggWriter extends MetadataWriter {
   @override
-  List<String> get supportedExtensions => ['.ogg'];
+  List<String> get supportedExtensions => ['.ogg', '.opus'];
 
   @override
   bool supportsFile(String filePath) {
-    return filePath.toLowerCase().endsWith('.ogg');
+    final path = filePath.toLowerCase();
+    return path.endsWith('.ogg') || path.endsWith('.opus');
   }
 
   @override
@@ -86,7 +87,10 @@ class OggWriter extends MetadataWriter {
   }
 
   @override
-  Future<Uint8List> writeTagsToBytes(Uint8List bytes, List<MetadataTag> tags) async {
+  Future<Uint8List> writeTagsToBytes(
+    Uint8List bytes,
+    List<MetadataTag> tags,
+  ) async {
     final textTags = tags
         .where((tag) => tag.key != CommonTags.albumArt)
         .toList();
@@ -94,8 +98,15 @@ class OggWriter extends MetadataWriter {
         .where((tag) => tag.key == CommonTags.albumArt)
         .toList();
 
-    final vorbisComment = _createVorbisCommentPacket(textTags, albumArtTags);
-    final newOggData = _replaceVorbisCommentInOgg(bytes, vorbisComment);
+    final isOpus = _isOpus(bytes);
+    final comment = _createVorbisCommentPacket(
+      textTags,
+      albumArtTags,
+      opus: isOpus,
+    );
+    final newOggData = isOpus
+        ? _replaceOpusCommentInOgg(bytes, comment)
+        : _replaceVorbisCommentInOgg(bytes, comment);
 
     if (newOggData != null) {
       return newOggData;
@@ -116,13 +127,17 @@ class OggWriter extends MetadataWriter {
   bool supportsBytes(Uint8List bytes) {
     if (bytes.length < 4) return false;
     // Check for OggS signature
-    return bytes[0] == 0x4F && bytes[1] == 0x67 && bytes[2] == 0x67 && bytes[3] == 0x53;
+    return bytes[0] == 0x4F &&
+        bytes[1] == 0x67 &&
+        bytes[2] == 0x67 &&
+        bytes[3] == 0x53;
   }
 
   Uint8List _createVorbisCommentPacket(
     List<MetadataTag> textTags,
-    List<MetadataTag> albumArtTags,
-  ) {
+    List<MetadataTag> albumArtTags, {
+    required bool opus,
+  }) {
     final comments = <String>[];
     final vendor = 'MetaTagger Dart Library';
 
@@ -145,8 +160,12 @@ class OggWriter extends MetadataWriter {
     final vendorBytes = utf8.encode(vendor);
     final commentData = <int>[];
 
-    commentData.add(0x03);
-    commentData.addAll(utf8.encode('vorbis'));
+    if (opus) {
+      commentData.addAll(utf8.encode('OpusTags'));
+    } else {
+      commentData.add(0x03);
+      commentData.addAll(utf8.encode('vorbis'));
+    }
 
     commentData.addAll(_writeInt32LE(vendorBytes.length));
     commentData.addAll(vendorBytes);
@@ -159,9 +178,138 @@ class OggWriter extends MetadataWriter {
       commentData.addAll(commentBytes);
     }
 
-    commentData.add(1); // Framing bit
+    if (!opus) commentData.add(1); // Vorbis framing bit
 
     return Uint8List.fromList(commentData);
+  }
+
+  bool _isOpus(Uint8List bytes) {
+    final pages = _parseOggPages(bytes);
+    if (pages.isEmpty) return false;
+    final firstPacket = _extractPackets(
+      pages,
+      pages.first.serialNumber,
+    ).firstOrNull;
+    return firstPacket != null &&
+        firstPacket.length >= 8 &&
+        utf8.decode(firstPacket.sublist(0, 8), allowMalformed: true) ==
+            'OpusHead';
+  }
+
+  Uint8List? _replaceOpusCommentInOgg(Uint8List bytes, Uint8List newComment) {
+    final pages = _parseOggPages(bytes);
+    if (pages.isEmpty) return null;
+    final serial = pages.first.serialNumber;
+    final packets = _extractPackets(pages, serial);
+    if (packets.length < 2 ||
+        packets[0].length < 8 ||
+        utf8.decode(packets[0].sublist(0, 8), allowMalformed: true) !=
+            'OpusHead') {
+      return null;
+    }
+    packets[1] = newComment;
+
+    final granules = pages
+        .where((page) => _listEquals(page.serialNumber, serial))
+        .map((page) => page.granulePosition)
+        .toList();
+    final rebuilt = _createOpusPages(
+      serial,
+      pages.first.sequenceNumber,
+      packets,
+      granules,
+      pages.last.headerType & 0x04 != 0,
+    );
+    final output = BytesBuilder();
+    for (final page in rebuilt) {
+      output.add(page.serialize());
+    }
+    return output.toBytes();
+  }
+
+  List<Uint8List> _extractPackets(List<_OggPage> pages, Uint8List serial) {
+    final packets = <Uint8List>[];
+    final current = <int>[];
+    for (final page in pages) {
+      if (!_listEquals(page.serialNumber, serial)) continue;
+      var offset = 0;
+      for (final segmentLength in page.segmentTable) {
+        current.addAll(page.packetData.sublist(offset, offset + segmentLength));
+        offset += segmentLength;
+        if (segmentLength < 255) {
+          packets.add(Uint8List.fromList(current));
+          current.clear();
+        }
+      }
+    }
+    return packets;
+  }
+
+  List<_OggPage> _createOpusPages(
+    Uint8List serial,
+    int startSequence,
+    List<Uint8List> packets,
+    List<Uint8List> granules,
+    bool endOfStream,
+  ) {
+    final pages = <_OggPage>[];
+    var sequence = startSequence;
+    var packetIndex = 0;
+    var pageIndex = 0;
+    var segments = <int>[];
+    var data = <int>[];
+    var continued = false;
+
+    void flush() {
+      if (segments.isEmpty) return;
+      pages.add(
+        _OggPage(
+          version: 0,
+          headerType: pageIndex == 0 ? 0x02 : (continued ? 0x01 : 0),
+          granulePosition: pageIndex < granules.length
+              ? granules[pageIndex]
+              : Uint8List(8),
+          serialNumber: serial,
+          sequenceNumber: sequence++,
+          crcChecksum: Uint8List(4),
+          pageSegments: segments.length,
+          segmentTable: List.from(segments),
+          packetData: Uint8List.fromList(data),
+        ),
+      );
+      pageIndex++;
+      segments = [];
+      data = [];
+      continued = false;
+    }
+
+    for (final packet in packets) {
+      packetIndex++;
+      var offset = 0;
+      while (offset < packet.length) {
+        if (segments.length == 255) flush();
+        final remaining = packet.length - offset;
+        final length = remaining > 255 ? 255 : remaining;
+        segments.add(length);
+        data.addAll(packet.sublist(offset, offset + length));
+        offset += length;
+        if (length == 255) continued = true;
+      }
+      if (packet.length % 255 == 0) {
+        if (segments.length == 255) flush();
+        segments.add(0);
+        continued = false;
+      } else {
+        continued = false;
+      }
+      // Keep OpusHead and OpusTags on their own pages. This matches the
+      // normal Opus-in-Ogg layout and avoids placing audio packets on the
+      // beginning-of-stream page.
+      if (packetIndex <= 2) flush();
+    }
+    flush();
+    if (endOfStream && pages.isNotEmpty) pages.last.headerType |= 0x04;
+    return pages;
   }
 
   List<int> _createPictureBlock(Uint8List imageData) {
@@ -189,7 +337,9 @@ class OggWriter extends MetadataWriter {
   String _detectMimeType(Uint8List imageData) {
     if (imageData.length >= 2) {
       if (imageData[0] == 0xFF && imageData[1] == 0xD8) return 'image/jpeg';
-      if (imageData.length >= 8 && imageData[0] == 0x89 && imageData[1] == 0x50) {
+      if (imageData.length >= 8 &&
+          imageData[0] == 0x89 &&
+          imageData[1] == 0x50) {
         return 'image/png';
       }
     }

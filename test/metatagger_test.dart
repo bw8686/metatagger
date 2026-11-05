@@ -26,6 +26,8 @@ void main() {
       expect(tagger.supportedExtensions, contains('.mp4'));
       expect(tagger.supportedExtensions, contains('.m4a'));
       expect(tagger.supportedExtensions, contains('.webm'));
+      expect(tagger.supportedExtensions, contains('.opus'));
+      expect(tagger.supportedExtensions, contains('.aac'));
     });
 
     test('should detect supported file formats', () {
@@ -34,6 +36,8 @@ void main() {
       expect(tagger.isSupported('test.mp4'), isTrue);
       expect(tagger.isSupported('test.m4a'), isTrue);
       expect(tagger.isSupported('test.webm'), isTrue);
+      expect(tagger.isSupported('test.opus'), isTrue);
+      expect(tagger.isSupported('test.aac'), isTrue);
       expect(tagger.isSupported('test.wav'), isFalse);
     });
 

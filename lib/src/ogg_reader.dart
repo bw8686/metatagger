@@ -4,14 +4,15 @@ import 'dart:convert';
 import 'metadata_reader.dart';
 import 'metadata_tag.dart';
 
-/// OGG Vorbis Comment metadata reader
+/// OGG Vorbis/Opus metadata reader.
 class OggReader extends MetadataReader {
   @override
-  List<String> get supportedExtensions => ['.ogg'];
+  List<String> get supportedExtensions => ['.ogg', '.opus'];
 
   @override
   bool supportsFile(String filePath) {
-    return filePath.toLowerCase().endsWith('.ogg');
+    final path = filePath.toLowerCase();
+    return path.endsWith('.ogg') || path.endsWith('.opus');
   }
 
   @override
@@ -33,11 +34,14 @@ class OggReader extends MetadataReader {
   bool supportsBytes(Uint8List bytes) {
     if (bytes.length < 4) return false;
     // Check for OggS signature
-    return bytes[0] == 0x4F && bytes[1] == 0x67 && bytes[2] == 0x67 && bytes[3] == 0x53;
+    return bytes[0] == 0x4F &&
+        bytes[1] == 0x67 &&
+        bytes[2] == 0x67 &&
+        bytes[3] == 0x53;
   }
 
   List<MetadataTag> _parseOggMetadata(Uint8List bytes) {
-    // Find the Vorbis Comment packet
+    // Find the Vorbis Comment or OpusTags packet.
     final commentPacket = _extractVorbisCommentPacket(bytes);
     if (commentPacket == null) return [];
 
@@ -47,7 +51,7 @@ class OggReader extends MetadataReader {
   Uint8List? _extractVorbisCommentPacket(Uint8List bytes) {
     int offset = 0;
     List<int> currentPacket = [];
-    bool isVorbisComment = false;
+    int commentHeaderLength = 0;
 
     while (offset < bytes.length - 27) {
       if (bytes[offset] != 0x4F ||
@@ -73,7 +77,7 @@ class OggReader extends MetadataReader {
 
         // If it's a new packet
         if (currentPacket.isEmpty) {
-          if (segmentLength > 7 &&
+          if (segmentLength >= 7 &&
               bytes[dataOffset] == 0x03 &&
               bytes[dataOffset + 1] == 0x76 && // v
               bytes[dataOffset + 2] == 0x6F && // o
@@ -82,13 +86,24 @@ class OggReader extends MetadataReader {
               bytes[dataOffset + 5] == 0x69 && // i
               bytes[dataOffset + 6] == 0x73) {
             // s
-            isVorbisComment = true;
+            commentHeaderLength = 7;
+          } else if (segmentLength >= 8 &&
+              bytes[dataOffset] == 0x4F && // O
+              bytes[dataOffset + 1] == 0x70 && // p
+              bytes[dataOffset + 2] == 0x75 && // u
+              bytes[dataOffset + 3] == 0x73 && // s
+              bytes[dataOffset + 4] == 0x54 && // T
+              bytes[dataOffset + 5] == 0x61 && // a
+              bytes[dataOffset + 6] == 0x67 && // g
+              bytes[dataOffset + 7] == 0x73) {
+            // s
+            commentHeaderLength = 8;
           } else {
-            isVorbisComment = false;
+            commentHeaderLength = 0;
           }
         }
 
-        if (isVorbisComment) {
+        if (commentHeaderLength != 0) {
           currentPacket.addAll(
             bytes.sublist(dataOffset, dataOffset + segmentLength),
           );
@@ -98,9 +113,11 @@ class OggReader extends MetadataReader {
 
         // If segment length is < 255, it's the end of the packet
         if (segmentLength < 255) {
-          if (isVorbisComment) {
+          if (commentHeaderLength != 0) {
             // Strip the 7-byte header (0x03 'vorbis') before returning
-            return Uint8List.fromList(currentPacket.sublist(7));
+            return Uint8List.fromList(
+              currentPacket.sublist(commentHeaderLength),
+            );
           }
           currentPacket.clear();
         }

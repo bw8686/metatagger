@@ -169,6 +169,33 @@ void main() {
       );
     });
 
+    test('Opus Memory Read/Write', () async {
+      final opusFile = File('example/example.opus');
+      if (!await opusFile.exists()) {
+        markTestSkipped('example/example.opus not found');
+        return;
+      }
+      var bytes = await opusFile.readAsBytes();
+      bytes = await tagger.writeTagsToBytes(bytes, [
+        MetadataTag.text(CommonTags.title, 'Memory Title Opus'),
+        MetadataTag.text(CommonTags.artist, 'Memory Artist'),
+      ]);
+
+      final readTags = await tagger.readTagsFromBytes(bytes);
+      expect(
+        readTags.any(
+          (t) => t.key == CommonTags.title && t.value == 'Memory Title Opus',
+        ),
+        isTrue,
+      );
+      expect(
+        readTags.any(
+          (t) => t.key == CommonTags.artist && t.value == 'Memory Artist',
+        ),
+        isTrue,
+      );
+    });
+
     test('WebM Memory Read/Write', () async {
       final segmentData = _ebmlElement(const [0x15, 0x49, 0xA9, 0x66], []);
       var bytes = Uint8List.fromList([

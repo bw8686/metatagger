@@ -1,4 +1,18 @@
-## 2.2.0 - 2026-11-05
+## 2.3.0
+
+- **AAC Support**: Added read and write support for raw ADTS `.aac` files using ID3v2 metadata.
+  - Supports text, numeric, custom metadata, and embedded album artwork.
+  - Added AAC-specific detection so ADTS frames are not misclassified as MP3.
+  - Added file and in-memory read/write tests using `example.aac`.
+- Added AAC standalone and all-in-one examples and updated format documentation.
+- **Opus Support**: Added read and write support for `.opus` files using Ogg Opus `OpusTags` comments.
+  - Supports text, numeric, custom metadata, and embedded album artwork.
+  - Added valid Opus packet repagination while preserving the audio stream.
+  - Added file and in-memory format detection through the existing OGG APIs.
+- Added `example.opus`, an Opus example script, all-in-one example coverage, and integration tests.
+- Verified rewritten Opus files with standard media probing tools.
+
+## 2.2.0
 
 - **WebM Support**: Added read and write support for EBML metadata in `.webm` files.
   - Supports text, numeric, and custom metadata through `Tags`/`SimpleTag` elements.

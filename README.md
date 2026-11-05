@@ -1,6 +1,6 @@
 # MetaTagger
 
-A pure Dart library for reading and writing metadata to MP3, MP4/M4A, FLAC, and OGG files with custom tag support.
+A pure Dart library for reading and writing metadata to MP3, MP4/M4A, FLAC, OGG, Opus, and WebM files with custom tag support.
 
 ## Features
 
@@ -9,8 +9,11 @@ A pure Dart library for reading and writing metadata to MP3, MP4/M4A, FLAC, and 
 - **MP4/M4A Support**: Read and write iTunes-style metadata to MP4/M4A files
 - **FLAC Support**: Read and write Vorbis Comments to FLAC files  
 - **OGG Support**: Read and write Vorbis Comments to OGG files  
+- **Opus Support**: Read and write OpusTags metadata and embedded album art to `.opus` files
+- **AAC Support**: Read and write ID3v2 metadata and embedded album art to raw ADTS `.aac` files
 - **Custom Tags**: Support for custom metadata fields
 - **Album Art**: Support for reading and embedding album artwork
+- WebM is text-metadata-only; use OGG/Opus or MKV/MKA for embedded artwork
 - **Pure Dart**: No native dependencies required
 - **Simple API**: Easy-to-use interface for metadata operations
 
@@ -23,6 +26,8 @@ A pure Dart library for reading and writing metadata to MP3, MP4/M4A, FLAC, and 
 | MP4/M4A | iTunes Metadata | `.mp4`, `.m4a`, `.m4v`, `.m4b` | ✓ | ✓ |
 | FLAC   | Vorbis Comments  | `.flac`         | ✓    | ✓     |
 | OGG    | Vorbis Comments  | `.ogg`          | ✓    | ✓     |
+| Opus   | OpusTags         | `.opus`         | ✓    | ✓     |
+| AAC    | ID3v2            | `.aac`          | ✓    | ✓     |
 
 ## Installation
 

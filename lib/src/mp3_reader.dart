@@ -33,11 +33,27 @@ class Mp3Reader extends MetadataReader {
   bool supportsBytes(Uint8List bytes) {
     if (bytes.length < 3) return false;
     // Check for ID3v2 header
-    if (bytes[0] == 0x49 && bytes[1] == 0x44 && bytes[2] == 0x33) return true;
-    
+    if (bytes[0] == 0x49 && bytes[1] == 0x44 && bytes[2] == 0x33) {
+      final tagSize = bytes.length >= 10
+          ? (bytes[6] << 21) | (bytes[7] << 14) | (bytes[8] << 7) | bytes[9]
+          : 0;
+      final audioOffset = 10 + tagSize + ((bytes[5] & 0x10) != 0 ? 10 : 0);
+      if (audioOffset + 1 < bytes.length &&
+          bytes[audioOffset] == 0xFF &&
+          (bytes[audioOffset + 1] & 0xF0) == 0xF0 &&
+          (bytes[audioOffset + 1] & 0x06) == 0) {
+        return false;
+      }
+      return true;
+    }
+
     // Check for MP3 frame sync word (11 bits set to 1)
-    if (bytes.length >= 2 && bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0) return true;
-    
+    if (bytes.length >= 2 &&
+        bytes[0] == 0xFF &&
+        (bytes[1] & 0xE0) == 0xE0 &&
+        (bytes[1] & 0x06) != 0)
+      return true;
+
     return false;
   }
 

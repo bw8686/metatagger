@@ -8,6 +8,8 @@ This directory contains example scripts demonstrating how to use MetaTagger with
 - `example.flac` - Sample FLAC file  
 - `example.mp4` - Sample MP4 video file
 - `example.ogg` - Sample OGG audio file
+- `example.opus` - Sample Opus audio file
+- `example.aac` - Sample AAC ADTS audio file
 - `example.webm` - Sample WebM audio file
 - `example.jpg` - Sample album art image
 
@@ -54,6 +56,20 @@ Reads and writes EBML metadata in the audio-only WebM example file.
 
 ```bash
 dart run example/webm_example.dart
+```
+
+#### `opus_example.dart`
+Reads and writes Opus comments and embedded album art in the example Opus file.
+
+```bash
+dart run example/opus_example.dart
+```
+
+#### `aac_example.dart`
+Reads and writes ID3v2 metadata and embedded album art in the raw AAC example file.
+
+```bash
+dart run example/aac_example.dart
 ```
 
 ### 🔄 Advanced Examples
@@ -136,6 +152,8 @@ The examples create test files with modified metadata. These are safe to delete:
 - `universal_test.*` - Universal metadata test files
 - `*_with_metadata.*` - Files with added metadata
 - `example_webm_with_metadata.webm` - WebM file created by `webm_example.dart`
+- `example_opus_with_metadata.opus` - Opus file created by `opus_example.dart`
+- `example_aac_with_metadata.aac` - AAC file created by `aac_example.dart`
 
 ## Supported Formats
 
@@ -145,6 +163,8 @@ The examples create test files with modified metadata. These are safe to delete:
 | MP4/M4A | `.mp4`, `.m4a`, `.m4v`, `.m4b` | ✓ | ✓ |
 | FLAC | `.flac` | ✓ | ✓ |
 | OGG | `.ogg` | ✓ | ✓ |
+| Opus | `.opus` | ✓ | ✓ |
+| AAC | `.aac` | ✓ | ✓ |
 | WebM | `.webm` | ✓ | ✓ |
 
 ## Tips

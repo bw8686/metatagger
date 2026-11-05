@@ -10,6 +10,8 @@ void main() async {
   // - example.flac (source FLAC file)
   // - example.mp4 (source MP4/M4A file)
   // - example.webm (source WebM audio file)
+  // - example.opus (source Opus audio file)
+  // - example.aac (source AAC audio file)
   // The script will create new files with metadata
 
   // Example: Writing metadata to an MP3 file
@@ -201,6 +203,91 @@ void main() async {
     }
   } catch (e) {
     print('✗ Error processing OGG: $e');
+  }
+
+  // Example: Writing metadata to an Opus file
+  print('\nProcessing Opus file...');
+
+  try {
+    final sourceOpus = File('example/example.opus');
+    final outputOpus = File('example/example_with_metadata.opus');
+
+    if (await sourceOpus.exists()) {
+      await sourceOpus.copy(outputOpus.path);
+      print('✓ Copied example.opus → example_with_metadata.opus');
+
+      await tagger.writeCommonTags(outputOpus.path, {
+        CommonTags.title: 'My Awesome Opus Audio',
+        CommonTags.album: 'Great Album',
+        CommonTags.artist: 'Amazing Artist',
+        CommonTags.year: '2024',
+        CommonTags.genre: 'Progressive Rock',
+      });
+
+      final albumArtFile = File('example/example.jpg');
+      if (await albumArtFile.exists()) {
+        await tagger.writeTag(
+          outputOpus.path,
+          MetadataTag.binary(
+            CommonTags.albumArt,
+            await albumArtFile.readAsBytes(),
+          ),
+        );
+        print('✓ Album art written to Opus');
+      }
+
+      final writtenTags = await tagger.readCommonTags(outputOpus.path);
+      print('✓ Successfully wrote metadata to Opus file!');
+      print('  Title: ${writtenTags[CommonTags.title]}');
+      print('  Artist: ${writtenTags[CommonTags.artist]}');
+    } else {
+      print(
+        '✗ Source file example.opus not found. Please add an Opus file to test.',
+      );
+    }
+  } catch (e) {
+    print('✗ Error processing Opus: $e');
+  }
+
+  // Example: Writing ID3v2 metadata to an AAC ADTS file
+  print('\nProcessing AAC file...');
+
+  try {
+    final sourceAAC = File('example/example.aac');
+    final outputAAC = File('example/example_with_metadata.aac');
+
+    if (await sourceAAC.exists()) {
+      await sourceAAC.copy(outputAAC.path);
+      print('✓ Copied example.aac → example_with_metadata.aac');
+
+      await tagger.writeCommonTags(outputAAC.path, {
+        CommonTags.title: 'My Awesome AAC Audio',
+        CommonTags.album: 'Great Album',
+        CommonTags.artist: 'Amazing Artist',
+        CommonTags.year: '2024',
+      });
+
+      final albumArtFile = File('example/example.jpg');
+      if (await albumArtFile.exists()) {
+        await tagger.writeTag(
+          outputAAC.path,
+          MetadataTag.binary(
+            CommonTags.albumArt,
+            await albumArtFile.readAsBytes(),
+          ),
+        );
+        print('✓ Album art written to AAC');
+      }
+
+      final writtenTags = await tagger.readCommonTags(outputAAC.path);
+      print('✓ Successfully wrote metadata to AAC file!');
+      print('  Title: ${writtenTags[CommonTags.title]}');
+      print('  Artist: ${writtenTags[CommonTags.artist]}');
+    } else {
+      print('✗ Source file example.aac not found.');
+    }
+  } catch (e) {
+    print('✗ Error processing AAC: $e');
   }
 
   // Example: Writing metadata to a WebM file

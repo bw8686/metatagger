@@ -13,6 +13,8 @@ import 'ogg_writer.dart';
 import 'ogg_reader.dart';
 import 'webm_writer.dart';
 import 'webm_reader.dart';
+import 'aac_writer.dart';
+import 'aac_reader.dart';
 
 /// Main class for reading and writing metadata to audio files
 class MetaTagger {
@@ -23,6 +25,7 @@ class MetaTagger {
   MetaTagger()
     : _writers = [
         Mp3Writer(),
+        AacWriter(),
         Mp4Writer(),
         FlacWriter(),
         OggWriter(),
@@ -30,6 +33,7 @@ class MetaTagger {
       ],
       _readers = [
         Mp3Reader(),
+        AacReader(),
         Mp4Reader(),
         FlacReader(),
         OggReader(),
@@ -45,6 +49,7 @@ class MetaTagger {
     : _writers = writers,
       _readers = [
         Mp3Reader(),
+        AacReader(),
         Mp4Reader(),
         FlacReader(),
         OggReader(),
