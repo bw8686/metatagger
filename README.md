@@ -19,6 +19,7 @@ A pure Dart library for reading and writing metadata to MP3, MP4/M4A, FLAC, and 
 | Format | Metadata Standard | File Extensions | Read | Write |
 |--------|------------------|-----------------|------|-------|
 | MP3    | ID3v2.3/2.4      | `.mp3`          | ✓    | ✓     |
+| WebM   | EBML SimpleTag   | `.webm`         | ✓    | ✓     |
 | MP4/M4A | iTunes Metadata | `.mp4`, `.m4a`, `.m4v`, `.m4b` | ✓ | ✓ |
 | FLAC   | Vorbis Comments  | `.flac`         | ✓    | ✓     |
 | OGG    | Vorbis Comments  | `.ogg`          | ✓    | ✓     |

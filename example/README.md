@@ -7,6 +7,8 @@ This directory contains example scripts demonstrating how to use MetaTagger with
 - `example.mp3` - Sample MP3 file
 - `example.flac` - Sample FLAC file  
 - `example.mp4` - Sample MP4 video file
+- `example.ogg` - Sample OGG audio file
+- `example.webm` - Sample WebM audio file
 - `example.jpg` - Sample album art image
 
 ## Example Scripts
@@ -45,6 +47,13 @@ Advanced MP4/M4A custom tag support:
 ```bash
 cd example
 dart run mp4_custom_tags_example.dart
+```
+
+#### `webm_example.dart`
+Reads and writes EBML metadata in the audio-only WebM example file.
+
+```bash
+dart run example/webm_example.dart
 ```
 
 ### 🔄 Advanced Examples
@@ -126,6 +135,7 @@ The examples create test files with modified metadata. These are safe to delete:
 - `migrated_from_*.*` - Files created by migration examples
 - `universal_test.*` - Universal metadata test files
 - `*_with_metadata.*` - Files with added metadata
+- `example_webm_with_metadata.webm` - WebM file created by `webm_example.dart`
 
 ## Supported Formats
 
@@ -134,6 +144,8 @@ The examples create test files with modified metadata. These are safe to delete:
 | MP3 | `.mp3` | ✓ | ✓ |
 | MP4/M4A | `.mp4`, `.m4a`, `.m4v`, `.m4b` | ✓ | ✓ |
 | FLAC | `.flac` | ✓ | ✓ |
+| OGG | `.ogg` | ✓ | ✓ |
+| WebM | `.webm` | ✓ | ✓ |
 
 ## Tips
 

@@ -26,7 +26,10 @@ class Mp3Writer extends MetadataWriter {
   }
 
   @override
-  Future<Uint8List> writeTagsToBytes(Uint8List bytes, List<MetadataTag> tags) async {
+  Future<Uint8List> writeTagsToBytes(
+    Uint8List bytes,
+    List<MetadataTag> tags,
+  ) async {
     // Remove existing ID3v2 tag if present
     final audioData = _removeExistingId3v2Tag(bytes);
 
@@ -53,10 +56,11 @@ class Mp3Writer extends MetadataWriter {
     if (bytes.length < 3) return false;
     // Check for ID3v2 header
     if (bytes[0] == 0x49 && bytes[1] == 0x44 && bytes[2] == 0x33) return true;
-    
+
     // Check for MP3 frame sync word (11 bits set to 1)
-    if (bytes.length >= 2 && bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0) return true;
-    
+    if (bytes.length >= 2 && bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0)
+      return true;
+
     return false;
   }
 
@@ -95,19 +99,24 @@ class Mp3Writer extends MetadataWriter {
     // Calculate total frames size
     final framesSize = frames.fold<int>(0, (sum, frame) => sum + frame.length);
 
-    // Create ID3v2.4 header
+    const paddingSize = 10;
+
+    // Create ID3v2.4 header. Padding is part of the tag size.
     final header = <int>[
       0x49, 0x44, 0x33, // "ID3"
       0x04, 0x00, // Version 2.4.0
       0x00, // Flags
-      ..._writeSynchsafeInt(framesSize), // Size
+      ..._writeSynchsafeInt(framesSize + paddingSize), // Size
     ];
 
-    // Combine header and frames
+    // ID3 padding is the terminating area after the final frame. Besides
+    // being valid ID3, it prevents validators from reporting a missing
+    // terminating frame when a tag contains no explicit padding.
     final result = <int>[...header];
     for (final frame in frames) {
       result.addAll(frame);
     }
+    result.addAll(List.filled(paddingSize, 0));
 
     return result;
   }

@@ -9,6 +9,7 @@ void main() async {
   // - example.mp3 (source MP3 file)
   // - example.flac (source FLAC file)
   // - example.mp4 (source MP4/M4A file)
+  // - example.webm (source WebM audio file)
   // The script will create new files with metadata
 
   // Example: Writing metadata to an MP3 file
@@ -200,6 +201,42 @@ void main() async {
     }
   } catch (e) {
     print('✗ Error processing OGG: $e');
+  }
+
+  // Example: Writing metadata to a WebM file
+  print('\nProcessing WebM file...');
+
+  try {
+    final sourceWebM = File('example/example.webm');
+    final outputWebM = File('example/example_with_metadata.webm');
+
+    if (await sourceWebM.exists()) {
+      await sourceWebM.copy(outputWebM.path);
+      print('✓ Copied example.webm → example_with_metadata.webm');
+
+      // WebM stores these values as EBML SimpleTag entries.
+      final tags = <MetadataTag>[
+        MetadataTag.text(CommonTags.title, 'My Awesome WebM Audio'),
+        MetadataTag.text(CommonTags.album, 'Great Album'),
+        MetadataTag.text(CommonTags.artist, 'Amazing Artist'),
+        MetadataTag.text(CommonTags.year, '2024'),
+        MetadataTag.text(CommonTags.genre, 'Progressive Rock'),
+        MetadataTag.text('CUSTOM_FIELD', 'Custom Value'),
+      ];
+
+      await tagger.writeTags(outputWebM.path, tags);
+      final writtenTags = await tagger.readCommonTags(outputWebM.path);
+
+      print('✓ Successfully wrote metadata to WebM file!');
+      print('  Title: ${writtenTags[CommonTags.title]}');
+      print('  Artist: ${writtenTags[CommonTags.artist]}');
+    } else {
+      print(
+        '✗ Source file example.webm not found. Please add a WebM file to test.',
+      );
+    }
+  } catch (e) {
+    print('✗ Error processing WebM: $e');
   }
 
   // Check supported formats

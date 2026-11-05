@@ -11,16 +11,30 @@ import 'flac_writer.dart';
 import 'flac_reader.dart';
 import 'ogg_writer.dart';
 import 'ogg_reader.dart';
+import 'webm_writer.dart';
+import 'webm_reader.dart';
 
 /// Main class for reading and writing metadata to audio files
 class MetaTagger {
   final List<MetadataWriter> _writers;
   final List<MetadataReader> _readers;
 
-  /// Creates a MetaTagger instance with default writers and readers for MP3, MP4/M4A, FLAC, and OGG
+  /// Creates a MetaTagger instance with default writers and readers for MP3, MP4/M4A, FLAC, OGG, and WebM.
   MetaTagger()
-    : _writers = [Mp3Writer(), Mp4Writer(), FlacWriter(), OggWriter()],
-      _readers = [Mp3Reader(), Mp4Reader(), FlacReader(), OggReader()];
+    : _writers = [
+        Mp3Writer(),
+        Mp4Writer(),
+        FlacWriter(),
+        OggWriter(),
+        WebmWriter(),
+      ],
+      _readers = [
+        Mp3Reader(),
+        Mp4Reader(),
+        FlacReader(),
+        OggReader(),
+        WebmReader(),
+      ];
 
   /// Creates a MetaTagger instance with custom writers and readers
   MetaTagger.withWritersAndReaders(this._writers, this._readers);
@@ -29,7 +43,13 @@ class MetaTagger {
   @Deprecated('Use withWritersAndReaders instead')
   MetaTagger.withWriters(List<MetadataWriter> writers)
     : _writers = writers,
-      _readers = [Mp3Reader(), Mp4Reader(), FlacReader(), OggReader()];
+      _readers = [
+        Mp3Reader(),
+        Mp4Reader(),
+        FlacReader(),
+        OggReader(),
+        WebmReader(),
+      ];
 
   /// Writes metadata tags to an audio file
   ///
@@ -190,10 +210,13 @@ class MetaTagger {
   }
 
   /// Writes metadata tags directly to a byte array and returns the modified byte array
-  /// 
+  ///
   /// Automatically detects the audio format from the bytes magic header.
   /// Throws [MetadataException] if the format is not supported or if writing fails.
-  Future<Uint8List> writeTagsToBytes(Uint8List bytes, List<MetadataTag> tags) async {
+  Future<Uint8List> writeTagsToBytes(
+    Uint8List bytes,
+    List<MetadataTag> tags,
+  ) async {
     final writer = _getWriterForBytes(bytes);
     return await writer.writeTagsToBytes(bytes, tags);
   }
@@ -205,7 +228,7 @@ class MetaTagger {
   }
 
   /// Reads all metadata tags directly from a byte array
-  /// 
+  ///
   /// Automatically detects the audio format from the bytes magic header.
   /// Throws [MetadataException] if the format is not supported or if reading fails.
   Future<List<MetadataTag>> readTagsFromBytes(Uint8List bytes) async {

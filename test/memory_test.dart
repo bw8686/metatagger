@@ -14,7 +14,10 @@ void main() {
 
     test('MP3 Memory Read/Write', () async {
       final mp3Data = Uint8List.fromList([
-        0xFF, 0xFB, 0x90, 0x00,
+        0xFF,
+        0xFB,
+        0x90,
+        0x00,
         ...List.filled(100, 0),
       ]);
       var bytes = mp3Data;
@@ -28,8 +31,18 @@ void main() {
 
       // Read tags from memory
       final readTags = await tagger.readTagsFromBytes(bytes);
-      expect(readTags.any((t) => t.key == CommonTags.title && t.value == 'Memory Title MP3'), isTrue);
-      expect(readTags.any((t) => t.key == CommonTags.artist && t.value == 'Memory Artist'), isTrue);
+      expect(
+        readTags.any(
+          (t) => t.key == CommonTags.title && t.value == 'Memory Title MP3',
+        ),
+        isTrue,
+      );
+      expect(
+        readTags.any(
+          (t) => t.key == CommonTags.artist && t.value == 'Memory Artist',
+        ),
+        isTrue,
+      );
     });
 
     test('FLAC Memory Read/Write', () async {
@@ -50,15 +63,28 @@ void main() {
       bytes = await tagger.writeTagsToBytes(bytes, newTags);
 
       final readTags = await tagger.readTagsFromBytes(bytes);
-      expect(readTags.any((t) => t.key == CommonTags.title && t.value == 'Memory Title FLAC'), isTrue);
-      expect(readTags.any((t) => t.key == CommonTags.artist && t.value == 'Memory Artist'), isTrue);
+      expect(
+        readTags.any(
+          (t) => t.key == CommonTags.title && t.value == 'Memory Title FLAC',
+        ),
+        isTrue,
+      );
+      expect(
+        readTags.any(
+          (t) => t.key == CommonTags.artist && t.value == 'Memory Artist',
+        ),
+        isTrue,
+      );
     });
 
     test('MP4 Memory Read/Write', () async {
       final mp4Data = <int>[];
       final ftypData = [
         ...utf8.encode('isom'),
-        0x00, 0x00, 0x02, 0x00,
+        0x00,
+        0x00,
+        0x02,
+        0x00,
         ...utf8.encode('isom'),
         ...utf8.encode('iso2'),
         ...utf8.encode('mp41'),
@@ -67,15 +93,26 @@ void main() {
 
       final moovContent = <int>[];
       final mvhdData = [
-        0x00, 0x00, 0x00, 0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
         ...List.filled(24, 0),
-        0x00, 0x01, 0x00, 0x00,
-        0x01, 0x00,
-        0x00, 0x00,
+        0x00,
+        0x01,
+        0x00,
+        0x00,
+        0x01,
+        0x00,
+        0x00,
+        0x00,
         ...List.filled(8, 0),
         ...List.filled(36, 0),
         ...List.filled(24, 0),
-        0x00, 0x00, 0x00, 0x02,
+        0x00,
+        0x00,
+        0x00,
+        0x02,
       ];
       moovContent.addAll(_wrapAtom('mvhd', mvhdData));
       mp4Data.addAll(_wrapAtom('moov', moovContent));
@@ -89,8 +126,18 @@ void main() {
       bytes = await tagger.writeTagsToBytes(bytes, newTags);
 
       final readTags = await tagger.readTagsFromBytes(bytes);
-      expect(readTags.any((t) => t.key == CommonTags.title && t.value == 'Memory Title MP4'), isTrue);
-      expect(readTags.any((t) => t.key == CommonTags.artist && t.value == 'Memory Artist'), isTrue);
+      expect(
+        readTags.any(
+          (t) => t.key == CommonTags.title && t.value == 'Memory Title MP4',
+        ),
+        isTrue,
+      );
+      expect(
+        readTags.any(
+          (t) => t.key == CommonTags.artist && t.value == 'Memory Artist',
+        ),
+        isTrue,
+      );
     });
 
     test('OGG Memory Read/Write', () async {
@@ -108,8 +155,45 @@ void main() {
       bytes = await tagger.writeTagsToBytes(bytes, newTags);
 
       final readTags = await tagger.readTagsFromBytes(bytes);
-      expect(readTags.any((t) => t.key == CommonTags.title && t.value == 'Memory Title OGG'), isTrue);
-      expect(readTags.any((t) => t.key == CommonTags.artist && t.value == 'Memory Artist'), isTrue);
+      expect(
+        readTags.any(
+          (t) => t.key == CommonTags.title && t.value == 'Memory Title OGG',
+        ),
+        isTrue,
+      );
+      expect(
+        readTags.any(
+          (t) => t.key == CommonTags.artist && t.value == 'Memory Artist',
+        ),
+        isTrue,
+      );
+    });
+
+    test('WebM Memory Read/Write', () async {
+      final segmentData = _ebmlElement(const [0x15, 0x49, 0xA9, 0x66], []);
+      var bytes = Uint8List.fromList([
+        ..._ebmlElement(const [0x1A, 0x45, 0xDF, 0xA3], []),
+        ..._ebmlElement(const [0x18, 0x53, 0x80, 0x67], segmentData),
+      ]);
+
+      bytes = await tagger.writeTagsToBytes(bytes, [
+        MetadataTag.text(CommonTags.title, 'Memory Title WebM'),
+        MetadataTag.text(CommonTags.artist, 'Memory Artist'),
+      ]);
+
+      final readTags = await tagger.readTagsFromBytes(bytes);
+      expect(
+        readTags.any(
+          (t) => t.key == CommonTags.title && t.value == 'Memory Title WebM',
+        ),
+        isTrue,
+      );
+      expect(
+        readTags.any(
+          (t) => t.key == CommonTags.artist && t.value == 'Memory Artist',
+        ),
+        isTrue,
+      );
     });
   });
 }
@@ -124,4 +208,9 @@ List<int> _wrapAtom(String type, List<int> data) {
     ...utf8.encode(type),
     ...data,
   ];
+}
+
+List<int> _ebmlElement(List<int> id, List<int> data) {
+  if (data.length >= 127) throw ArgumentError('Test element is too large');
+  return [...id, 0x80 | data.length, ...data];
 }

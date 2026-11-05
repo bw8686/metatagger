@@ -1,3 +1,14 @@
+## 2.2.0 - 2026-11-05
+
+- **WebM Support**: Added read and write support for EBML metadata in `.webm` files.
+  - Supports text, numeric, and custom metadata through `Tags`/`SimpleTag` elements.
+  - Supports file-based and in-memory operations with automatic WebM detection.
+  - Added `WebmReader` and `WebmWriter` exports.
+- WebM embedded artwork is explicitly rejected because attachments are not part of the compliant WebM profile. Use OGG/Opus or MKV/MKA for embedded artwork.
+- **MP3 Reliability**: Added valid ID3 padding to prevent “Missing ID3 terminating frame” warnings.
+- Added real-file WebM integration tests using `example/example.webm`.
+- Added WebM examples and updated format documentation.
+
 ## 2.1.0
 
 - **In-Memory Parsing**: Added support for parsing and writing metadata directly from/to `Uint8List` byte arrays without using physical files.
