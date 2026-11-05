@@ -26,8 +26,9 @@ class WebmWriter extends MetadataWriter {
     Uint8List bytes,
     List<MetadataTag> tags,
   ) async {
-    if (!supportsBytes(bytes))
+    if (!supportsBytes(bytes)) {
       throw const MetadataException('Not a WebM/EBML file');
+    }
     if (tags.any((tag) => tag.type == TagType.binary)) {
       throw const MetadataException(
         'WebM does not support embedded artwork. Use OGG/Opus or MKV/MKA.',
@@ -39,8 +40,9 @@ class WebmWriter extends MetadataWriter {
       0,
       bytes.length,
     );
-    if (segment == null)
+    if (segment == null) {
       throw const MetadataException('WebM segment not found');
+    }
     final oldMetadata = <_Element>[];
     var scanOffset = segment.dataStart;
     var insertionOffset = segment.dataEnd;
@@ -165,32 +167,6 @@ class WebmWriter extends MetadataWriter {
     value & 0xFF,
   ];
 
-  List<int> _createAttachments(List<MetadataTag> tags) {
-    final matchingArt = tags.where(
-      (tag) =>
-          tag.key.toUpperCase() == CommonTags.albumArt &&
-          tag.type == TagType.binary &&
-          tag.value is Uint8List,
-    );
-    if (matchingArt.isEmpty) return [];
-    final art = matchingArt.first;
-    final image = art.value as Uint8List;
-    final mime = _detectMimeType(image);
-    final fileName = mime == 'image/png' ? 'cover.png' : 'cover.jpg';
-    final attachedFile = <int>[
-      ..._element(const [0x46, 0x6E], utf8.encode(fileName)),
-      ..._element(const [0x46, 0x60], utf8.encode(mime)),
-      ..._element(const [0x46, 0xAE], [1]),
-      ..._element(const [0x46, 0x5C], image),
-    ];
-    return _element(
-      const [0x19, 0x41, 0xA4, 0x69],
-      [
-        ..._element(const [0x61, 0xA7], attachedFile),
-      ],
-    );
-  }
-
   String _detectMimeType(Uint8List image) {
     if (image.length >= 8 &&
         image[0] == 0x89 &&
@@ -273,7 +249,9 @@ class WebmWriter extends MetadataWriter {
 
   int _vintValue(Uint8List bytes, int offset, int length) {
     var value = bytes[offset] & (0xFF >> length);
-    for (var i = 1; i < length; i++) value = (value << 8) | bytes[offset + i];
+    for (var i = 1; i < length; i++) {
+      value = (value << 8) | bytes[offset + i];
+    }
     return value == (1 << (7 * length)) - 1 ? -1 : value;
   }
 

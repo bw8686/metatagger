@@ -70,8 +70,8 @@ void main() async {
         print('      Saved to: ${artFile.path}');
       }
 
-      print('\n' + '─' * 60 + '\n');
-    } catch (e, stack) {
+      print('\n${'─' * 60}\n');
+    } catch (e) {
       print('   ❌ Error reading metadata: $e\n');
       if (e.toString().contains('Unsupported')) {
         print('   (File format not supported)\n');

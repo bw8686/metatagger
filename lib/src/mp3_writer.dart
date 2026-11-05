@@ -58,8 +58,9 @@ class Mp3Writer extends MetadataWriter {
     if (bytes[0] == 0x49 && bytes[1] == 0x44 && bytes[2] == 0x33) return true;
 
     // Check for MP3 frame sync word (11 bits set to 1)
-    if (bytes.length >= 2 && bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0)
+    if (bytes.length >= 2 && bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0) {
       return true;
+    }
 
     return false;
   }
