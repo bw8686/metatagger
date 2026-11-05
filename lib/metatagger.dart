@@ -12,6 +12,8 @@ export 'src/mp3_writer.dart';
 export 'src/mp3_reader.dart';
 export 'src/aac_writer.dart';
 export 'src/aac_reader.dart';
+export 'src/opus_writer.dart';
+export 'src/opus_reader.dart';
 export 'src/mp4_writer.dart';
 export 'src/mp4_reader.dart';
 export 'src/flac_writer.dart';

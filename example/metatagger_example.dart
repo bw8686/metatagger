@@ -226,14 +226,25 @@ void main() async {
 
       final albumArtFile = File('example/example.jpg');
       if (await albumArtFile.exists()) {
-        await tagger.writeTag(
-          outputOpus.path,
-          MetadataTag.binary(
-            CommonTags.albumArt,
-            await albumArtFile.readAsBytes(),
-          ),
-        );
-        print('✓ Album art written to Opus');
+        final opusBytes = await outputOpus.readAsBytes();
+        if (opusBytes.length >= 4 &&
+            opusBytes[0] == 0x4F &&
+            opusBytes[1] == 0x67 &&
+            opusBytes[2] == 0x67 &&
+            opusBytes[3] == 0x53) {
+          await tagger.writeTag(
+            outputOpus.path,
+            MetadataTag.binary(
+              CommonTags.albumArt,
+              await albumArtFile.readAsBytes(),
+            ),
+          );
+          print('✓ Album art written to Ogg Opus');
+        } else {
+          print(
+            '⚠ WebM-contained Opus detected; embedded artwork is unsupported',
+          );
+        }
       }
 
       final writtenTags = await tagger.readCommonTags(outputOpus.path);

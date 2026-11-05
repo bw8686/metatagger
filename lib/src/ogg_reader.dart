@@ -7,12 +7,11 @@ import 'metadata_tag.dart';
 /// OGG Vorbis/Opus metadata reader.
 class OggReader extends MetadataReader {
   @override
-  List<String> get supportedExtensions => ['.ogg', '.opus'];
+  List<String> get supportedExtensions => ['.ogg'];
 
   @override
   bool supportsFile(String filePath) {
-    final path = filePath.toLowerCase();
-    return path.endsWith('.ogg') || path.endsWith('.opus');
+    return filePath.toLowerCase().endsWith('.ogg');
   }
 
   @override

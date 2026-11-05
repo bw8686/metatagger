@@ -19,11 +19,22 @@ Future<void> main() async {
     CommonTags.year: '2026',
   });
 
-  final image = await File('example/example.jpg').readAsBytes();
-  await tagger.writeTag(
-    output.path,
-    MetadataTag.binary(CommonTags.albumArt, image),
-  );
+  final bytes = await output.readAsBytes();
+  if (bytes.length >= 4 &&
+      bytes[0] == 0x4F &&
+      bytes[1] == 0x67 &&
+      bytes[2] == 0x67 &&
+      bytes[3] == 0x53) {
+    final image = await File('example/example.jpg').readAsBytes();
+    await tagger.writeTag(
+      output.path,
+      MetadataTag.binary(CommonTags.albumArt, image),
+    );
+  } else {
+    print(
+      'WebM-contained Opus detected; embedded artwork is not supported by WebM.',
+    );
+  }
 
   final tags = await tagger.readCommonTags(output.path);
   print('Wrote and read Opus metadata:');

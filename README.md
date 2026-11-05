@@ -9,7 +9,7 @@ A pure Dart library for reading and writing metadata to MP3, MP4/M4A, FLAC, OGG,
 - **MP4/M4A Support**: Read and write iTunes-style metadata to MP4/M4A files
 - **FLAC Support**: Read and write Vorbis Comments to FLAC files  
 - **OGG Support**: Read and write Vorbis Comments to OGG files  
-- **Opus Support**: Read and write OpusTags metadata and embedded album art to `.opus` files
+- **Opus Support**: Read and write `.opus` files in both Ogg Opus and WebM-contained Opus forms; embedded artwork is supported for Ogg Opus
 - **AAC Support**: Read and write ID3v2 metadata and embedded album art to raw ADTS `.aac` files
 - **Custom Tags**: Support for custom metadata fields
 - **Album Art**: Support for reading and embedding album artwork

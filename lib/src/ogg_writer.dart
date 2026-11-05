@@ -67,12 +67,11 @@ class _OggPage {
 /// OGG Vorbis/Opus metadata writer.
 class OggWriter extends MetadataWriter {
   @override
-  List<String> get supportedExtensions => ['.ogg', '.opus'];
+  List<String> get supportedExtensions => ['.ogg'];
 
   @override
   bool supportsFile(String filePath) {
-    final path = filePath.toLowerCase();
-    return path.endsWith('.ogg') || path.endsWith('.opus');
+    return filePath.toLowerCase().endsWith('.ogg');
   }
 
   @override

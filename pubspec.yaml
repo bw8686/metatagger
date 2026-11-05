@@ -1,6 +1,6 @@
 name: metatagger
 description: A pure Dart library for reading and writing audio metadata (ID3v2, Vorbis Comments, iTunes-style, and EBML) in MP3, FLAC, MP4/M4A, OGG, Opus, and WebM files.
-version: 2.3.0
+version: 2.3.1
 repository: https://github.com/bw8686/metatagger
 
 environment:

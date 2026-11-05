@@ -59,7 +59,7 @@ dart run example/webm_example.dart
 ```
 
 #### `opus_example.dart`
-Reads and writes Opus comments and embedded album art in the example Opus file.
+Reads and writes Opus metadata in the example file. Embedded artwork is added when the file is Ogg Opus; WebM-contained Opus remains text-metadata-only.
 
 ```bash
 dart run example/opus_example.dart

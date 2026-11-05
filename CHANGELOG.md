@@ -1,3 +1,12 @@
+## 2.3.1 - 2026-11-05
+
+- **Opus Container Detection**: Added content-aware dispatch for `.opus` files.
+  - Ogg Opus files use `OpusTags` metadata and support embedded artwork.
+  - WebM-contained Opus files use WebM/EBML metadata handling.
+  - Prevents WebM-contained Opus files from being incorrectly sent to the Ogg parser.
+- Updated the all-in-one and Opus examples to handle both container types correctly.
+- Added regression coverage for WebM-contained Opus metadata and artwork limitations.
+
 ## 2.3.0
 
 - **AAC Support**: Added read and write support for raw ADTS `.aac` files using ID3v2 metadata.
